@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Search, SlidersHorizontal, ChevronDown, BookmarkPlus } from "lucide-react";
+import { useState } from "react";
+import { SlidersHorizontal, ChevronDown, BookmarkPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,61 +11,52 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { useAdsFilters, SORT_OPTIONS, CREATIVE_TYPES } from "./use-ads-filters";
+import {
+  useAdsFilters,
+  SORT_OPTIONS,
+  CREATIVE_TYPES,
+  STATUS_OPTIONS,
+} from "./use-ads-filters";
 import { useAds } from "./use-ads";
 import { MetricsSelector } from "./metrics-selector";
 import { SaveReportDialog } from "./save-report-dialog";
+import { SmartSearch } from "./smart-search";
 import { useAdAccount } from "@/context/ad-account-context";
 
-export function AdsToolbar() {
+type Props = { actions?: React.ReactNode; hideSave?: boolean };
+
+export function AdsToolbar({ actions, hideSave }: Props) {
   const { filters, setFilters } = useAdsFilters();
   const { data, isFetching } = useAds();
   const { selected } = useAdAccount();
   const pagination = data?.pagination;
   const [saveOpen, setSaveOpen] = useState(false);
 
-  const [searchInput, setSearchInput] = useState(filters.q);
-
-  useEffect(() => {
-    const t = setTimeout(() => {
-      if (searchInput !== filters.q) setFilters({ q: searchInput, page: 1 });
-    }, 400);
-    return () => clearTimeout(t);
-  }, [searchInput]);
-
-  useEffect(() => { setSearchInput(filters.q); }, [filters.q]);
-
   const currentSort = SORT_OPTIONS.find((o) => o.value === filters.sort);
 
   return (
     <div className="flex flex-col gap-3 px-6 py-4 border-b border-border">
-      {/* Row 1 — search + actions */}
-      <div className="flex items-center gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
-          <Input
-            placeholder="Search ad name, campaign or ad set…"
-            className="pl-9 h-9 bg-background"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-          />
-        </div>
-
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-2 text-sm shrink-0"
-          disabled={!selected}
-          onClick={() => setSaveOpen(true)}
-        >
-          <BookmarkPlus className="size-4" />
-          Save as report
-        </Button>
+      {/* Row 1 — smart search + injected actions + save */}
+      <div className="flex items-start gap-2">
+        <SmartSearch />
+        {actions}
+        {!hideSave && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2 text-sm shrink-0 h-9"
+            disabled={!selected}
+            onClick={() => setSaveOpen(true)}
+          >
+            <BookmarkPlus className="size-4" />
+            Save as report
+          </Button>
+        )}
       </div>
 
       <SaveReportDialog open={saveOpen} onClose={() => setSaveOpen(false)} />
 
-      {/* Row 2 — type tabs + sort + metrics + count */}
+      {/* Row 2 — type tabs + status + sort + metrics + count */}
       <div className="flex items-center gap-2 flex-wrap">
         {/* Creative type tabs */}
         <div className="flex items-center gap-0.5 bg-muted rounded-lg p-0.5">
@@ -86,7 +76,25 @@ export function AdsToolbar() {
           ))}
         </div>
 
-        <div className="w-px h-5 bg-border mx-1" />
+        {/* Status tabs */}
+        <div className="flex items-center gap-0.5 bg-muted rounded-lg p-0.5">
+          {STATUS_OPTIONS.map((s) => (
+            <button
+              key={s.value}
+              onClick={() => setFilters({ status: s.value, page: 1 })}
+              className={cn(
+                "px-3 h-7 rounded-md text-sm font-medium transition-colors",
+                filters.status === s.value
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="w-px h-5 bg-border" />
 
         {/* Sort */}
         <DropdownMenu>

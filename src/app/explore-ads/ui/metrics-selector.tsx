@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown } from "lucide-react";
+import { BarChart2, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,15 +9,19 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { METRIC_DEFS, useAdsMetrics } from "./ads-metrics-store";
+import { getMetricDefs, useAdsMetrics } from "./ads-metrics-store";
+import { useAdAccount } from "@/context/ad-account-context";
 
 export function MetricsSelector() {
   const { selected, toggle } = useAdsMetrics();
+  const { selected: account } = useAdAccount();
+  const metricDefs = getMetricDefs(account?.currency ?? "USD");
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="gap-1.5 h-8 text-sm">
+          <BarChart2 className="size-3.5" />
           Metrics
           <span className="size-4 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold flex items-center justify-center">
             {selected.length}
@@ -32,7 +36,7 @@ export function MetricsSelector() {
         </DropdownMenuLabel>
 
         <div className="flex flex-col gap-0.5">
-          {METRIC_DEFS.map((def) => {
+          {metricDefs.map((def) => {
             const active = selected.includes(def.key);
             return (
               <button
@@ -46,19 +50,29 @@ export function MetricsSelector() {
                 <span
                   className={cn(
                     "size-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors",
-                    active
-                      ? "bg-primary border-primary"
-                      : "border-border"
+                    active ? "bg-primary border-primary" : "border-border"
                   )}
                 >
                   {active && (
-                    <svg viewBox="0 0 10 8" className="size-2.5 text-primary-foreground" fill="none">
-                      <path d="M1 4l3 3 5-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <svg
+                      viewBox="0 0 10 8"
+                      className="size-2.5 text-primary-foreground"
+                      fill="none"
+                    >
+                      <path
+                        d="M1 4l3 3 5-6"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
                     </svg>
                   )}
                 </span>
                 <span className="flex-1 font-medium">{def.label}</span>
-                <span className="text-xs text-muted-foreground">{def.unit}</span>
+                <span className="text-xs text-muted-foreground">
+                  {def.unit}
+                </span>
               </button>
             );
           })}

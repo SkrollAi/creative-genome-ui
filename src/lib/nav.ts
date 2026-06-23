@@ -1,4 +1,4 @@
-import { LayoutGrid, FileText } from "lucide-react";
+import { LayoutGrid } from "lucide-react";
 
 export type NavItem = {
   title: string;
@@ -11,10 +11,5 @@ export const navItems: NavItem[] = [
     title: "Explore Ads",
     href: "/explore-ads",
     icon: LayoutGrid,
-  },
-  {
-    title: "Reports",
-    href: "/reports",
-    icon: FileText,
   },
 ];

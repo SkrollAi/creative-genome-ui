@@ -4,7 +4,8 @@ import { useState } from "react";
 import Image from "next/image";
 import { Play, VideoIcon, ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { METRIC_DEFS, useAdsMetrics } from "./ads-metrics-store";
+import { getMetricDefs, useAdsMetrics } from "./ads-metrics-store";
+import { useAdAccount } from "@/context/ad-account-context";
 
 export type AdMetrics = {
   ad_id: string;
@@ -40,6 +41,8 @@ export type Ad = {
   thumbnail_url: string;
   headline: string;
   cta: string;
+  cta_url: string;
+  launched_at: string;
   primary_text: string;
   status: "ACTIVE" | "PAUSED";
   synced_at: string;
@@ -50,7 +53,9 @@ type Props = { ad: Ad; onSelect: (ad: Ad) => void };
 
 export function AdsCard({ ad, onSelect }: Props) {
   const { selected } = useAdsMetrics();
-  const selectedDefs = METRIC_DEFS.filter((d) => selected.includes(d.key));
+  const { selected: account } = useAdAccount();
+  const metricDefs = getMetricDefs(account?.currency ?? "USD");
+  const selectedDefs = metricDefs.filter((d) => selected.includes(d.key));
   const [playing, setPlaying] = useState(false);
 
   const previewSrc =
@@ -64,7 +69,7 @@ export function AdsCard({ ad, onSelect }: Props) {
       onClick={() => onSelect(ad)}
     >
       {/* Creative area */}
-      <div className="relative aspect-4/3 bg-linear-to-br from-slate-800 to-slate-900 overflow-hidden">
+      <div className="relative aspect-3/4 bg-linear-to-br from-slate-800 to-slate-900 overflow-hidden">
         {playing && hasVideoUrl ? (
           <video
             src={ad.url}
@@ -147,10 +152,13 @@ export function AdsCard({ ad, onSelect }: Props) {
             <div className="w-full h-px bg-border" />
             <div className="grid grid-cols-3 gap-x-2 gap-y-3">
               {selectedDefs.map((def) => {
-                const val = ad.metrics?.[def.key as keyof AdMetrics] as
-                  | number
-                  | null
-                  | undefined;
+                const val =
+                  def.key === "launched_at"
+                    ? ad.launched_at
+                    : (ad.metrics?.[def.key as keyof AdMetrics] as
+                        | number
+                        | null
+                        | undefined);
                 return (
                   <div
                     key={def.key}

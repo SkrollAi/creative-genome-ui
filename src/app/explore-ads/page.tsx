@@ -1,6 +1,7 @@
-import { Suspense } from "react";
 import { AdsToolbar } from "./ui/ads-toolbar";
 import { AdsContent } from "./ui/ads-content";
+import { FiltersReset } from "./ui/filters-reset";
+import { RerunAdsButton } from "./ui/rerun-ads-button";
 
 export default function ExploreAdsPage() {
   return (
@@ -11,11 +12,9 @@ export default function ExploreAdsPage() {
           Your top-spending ads, ready to slice — save any view as a report.
         </p>
       </div>
-
-      <Suspense>
-        <AdsToolbar />
-        <AdsContent />
-      </Suspense>
+      <FiltersReset />
+      <AdsToolbar actions={<RerunAdsButton />} />
+      <AdsContent />
     </div>
   );
 }

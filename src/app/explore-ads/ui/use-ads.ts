@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { useAdAccount } from "@/context/ad-account-context";
-import { useAdsFilters } from "./use-ads-filters";
+import { useAdsFiltersStore } from "./use-ads-filters";
 import type { Ad } from "./ads-card";
 
 type Pagination = {
@@ -22,19 +22,22 @@ export type AdsResponse = {
 
 export function useAds() {
   const { selected } = useAdAccount();
-  const { filters } = useAdsFilters();
+  const { filters } = useAdsFiltersStore();
 
   return useQuery({
     queryKey: ["ads", selected?.account_id, filters],
     queryFn: async (): Promise<AdsResponse> => {
       const res = await api.post("/creative_genome/ads/list", {
-        account_id:    selected?.account_id,
-        search:        filters.q,
+        account_id: selected?.account_id,
+        ad_name: filters.ad_name,
+        adset_name: filters.adset_name,
+        campaign_name: filters.campaign_name,
         creative_type: filters.type,
-        sort_by:       filters.sort,
-        sort_order:    filters.order,
-        page:          filters.page,
-        limit:         filters.limit,
+        status: filters.status,
+        sort_by: filters.sort,
+        sort_order: filters.order,
+        page: filters.page,
+        limit: filters.limit,
       });
       return res.data.data;
     },

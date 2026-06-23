@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { BookmarkPlus, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Loader2, Save } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -16,26 +16,32 @@ import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { useAdAccount } from "@/context/ad-account-context";
-import { useAdsFilters } from "./use-ads-filters";
+import { useAdsFilters } from "@/app/explore-ads/ui/use-ads-filters";
+import type { Report } from "@/app/reports/ui/use-reports";
 
 type Props = {
+  report: Report;
   open: boolean;
   onClose: () => void;
 };
 
-export function SaveReportDialog({ open, onClose }: Props) {
+export function UpdateReportDialog({ report, open, onClose }: Props) {
   const { selected } = useAdAccount();
   const { filters } = useAdsFilters();
   const qc = useQueryClient();
-  const [name, setName] = useState("");
+  const [name, setName] = useState(report.name);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (open) setName(report.name);
+  }, [open, report.name]);
 
   async function handleSave() {
     if (!name.trim()) return;
     setSaving(true);
     try {
-      await api.post("/creative_genome/reports/create", {
-        account_id: selected?.account_id,
+      await api.post("/creative_genome/reports/update", {
+        report_id: report.id,
         name: name.trim(),
         filters: {
           ad_name: filters.ad_name,
@@ -46,34 +52,32 @@ export function SaveReportDialog({ open, onClose }: Props) {
           sort_by: filters.sort,
           sort_order: filters.order,
           limit: filters.limit,
-          date_range: "last_14d",
+          date_range: report.filters.date_range ?? "last_14d",
         },
       });
+      qc.invalidateQueries({ queryKey: ["report", report.id] });
       qc.invalidateQueries({ queryKey: ["reports", selected?.account_id] });
-      toast.success(`Report "${name.trim()}" saved`);
-      setName("");
+      toast.success("Report updated");
       onClose();
     } catch {
-      toast.error("Failed to save report");
+      toast.error("Failed to update report");
     } finally {
       setSaving(false);
     }
   }
 
-  function handleOpenChange(v: boolean) {
-    if (!v) {
-      setName("");
-      onClose();
-    }
-  }
-
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        if (!v) onClose();
+      }}
+    >
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <BookmarkPlus className="size-4" />
-            Save as report
+            <Save className="size-4" />
+            Update report
           </DialogTitle>
         </DialogHeader>
 
@@ -82,13 +86,15 @@ export function SaveReportDialog({ open, onClose }: Props) {
             <Label htmlFor="report-name">Report name</Label>
             <Input
               id="report-name"
-              placeholder="e.g. Top video ads — June"
               value={name}
               onChange={(e) => setName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSave()}
               autoFocus
             />
           </div>
+          <p className="text-xs text-muted-foreground">
+            Current filters will also be saved with this report.
+          </p>
         </div>
 
         <DialogFooter>
@@ -97,7 +103,7 @@ export function SaveReportDialog({ open, onClose }: Props) {
           </Button>
           <Button onClick={handleSave} disabled={!name.trim() || saving}>
             {saving && <Loader2 className="size-3.5 animate-spin mr-1.5" />}
-            Save report
+            Update
           </Button>
         </DialogFooter>
       </DialogContent>
