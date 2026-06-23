@@ -82,6 +82,7 @@ export function AdsCard({ ad, onSelect }: Props) {
                 fill
                 className="object-cover"
                 unoptimized
+                loading="eager"
               />
             )}
 
@@ -90,14 +91,21 @@ export function AdsCard({ ad, onSelect }: Props) {
 
             {/* Type badge */}
             <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-black/55 text-white text-xs font-medium px-2 py-1 rounded-full backdrop-blur-sm">
-              {isVideo ? <VideoIcon className="size-3" /> : <ImageIcon className="size-3" />}
+              {isVideo ? (
+                <VideoIcon className="size-3" />
+              ) : (
+                <ImageIcon className="size-3" />
+              )}
               {isVideo ? "Video" : "Image"}
             </div>
 
             {/* Play button overlay */}
             {hasVideoUrl && (
               <button
-                onClick={(e) => { e.stopPropagation(); setPlaying(true); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setPlaying(true);
+                }}
                 className="absolute inset-0 flex items-center justify-center group"
               >
                 <div className="size-11 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30 group-hover:bg-white/30 transition-colors">
@@ -139,10 +147,18 @@ export function AdsCard({ ad, onSelect }: Props) {
             <div className="w-full h-px bg-border" />
             <div className="grid grid-cols-3 gap-x-2 gap-y-3">
               {selectedDefs.map((def) => {
-                const val = ad.metrics?.[def.key as keyof AdMetrics] as number | null | undefined;
+                const val = ad.metrics?.[def.key as keyof AdMetrics] as
+                  | number
+                  | null
+                  | undefined;
                 return (
-                  <div key={def.key} className="flex flex-col items-center gap-0.5">
-                    <span className="text-[11px] text-muted-foreground">{def.label}</span>
+                  <div
+                    key={def.key}
+                    className="flex flex-col items-center gap-0.5"
+                  >
+                    <span className="text-[11px] text-muted-foreground">
+                      {def.label}
+                    </span>
                     <span className="text-sm font-bold">{def.format(val)}</span>
                   </div>
                 );
