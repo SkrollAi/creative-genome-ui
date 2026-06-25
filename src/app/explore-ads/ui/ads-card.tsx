@@ -41,6 +41,9 @@ export type AdEntry = {
   status: "ACTIVE" | "PAUSED";
   launched_at: string;
   headline: string;
+  primary_text: string;
+  cta: string;
+  cta_url: string;
   metrics: AdMetrics | null;
 };
 
@@ -49,10 +52,6 @@ export type Creative = {
   creative_type: "video" | "image";
   url: string;
   thumbnail_url: string;
-  cta: string;
-  cta_url: string;
-  launched_at: string;
-  status: "ACTIVE" | "PAUSED";
   ad_count: number;
   metrics: AdMetrics | null;
   ads: AdEntry[];
@@ -157,12 +156,12 @@ export function AdsCard({ creative, onSelect }: Props) {
           <span
             className={cn(
               "text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded shrink-0",
-              creative.status === "ACTIVE"
+              rep?.status === "ACTIVE"
                 ? "bg-emerald-100 text-emerald-700"
                 : "bg-muted text-muted-foreground"
             )}
           >
-            {creative.status}
+            {rep?.status}
           </span>
         </div>
 
@@ -174,7 +173,7 @@ export function AdsCard({ creative, onSelect }: Props) {
               {selectedDefs.map((def) => {
                 const val =
                   def.key === "launched_at"
-                    ? creative.launched_at
+                    ? creative.ads[0]?.launched_at
                     : (creative.metrics?.[def.key as keyof AdMetrics] as
                         | number
                         | null

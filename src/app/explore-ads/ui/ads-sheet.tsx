@@ -2,7 +2,13 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Play, TrendingUp, LayoutGrid, Info, ExternalLink } from "lucide-react";
+import {
+  Play,
+  TrendingUp,
+  LayoutGrid,
+  ExternalLink,
+  Pencil,
+} from "lucide-react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { getMetricDefs } from "./ads-metrics-store";
@@ -56,14 +62,18 @@ function MetricsGrid({
   launchedAt?: string;
   currency: string;
 }) {
-  const metricDefs = getMetricDefs(currency);
+  const allDefs = getMetricDefs(currency);
+  const metricDefs =
+    launchedAt === undefined
+      ? allDefs.filter((d) => d.key !== "launched_at")
+      : allDefs;
   if (!metrics)
     return (
       <p className="text-sm text-muted-foreground">No metrics available.</p>
     );
   return (
     <>
-      <div className="grid grid-cols-3 gap-2.5 mb-3">
+      <div className="grid grid-cols-3 gap-2 mb-3">
         {metricDefs.map((def) => {
           const val =
             def.key === "launched_at"
@@ -75,12 +85,12 @@ function MetricsGrid({
           return (
             <div
               key={def.key}
-              className="rounded-lg bg-muted/50 px-3 py-2.5 flex flex-col gap-1"
+              className="rounded-lg bg-muted/50 px-3 py-2.5 flex flex-col gap-0.5"
             >
-              <span className="text-[11px] text-muted-foreground">
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wide">
                 {def.label}
               </span>
-              <span className="text-base font-bold tracking-tight">
+              <span className="text-sm font-bold tracking-tight">
                 {def.format(val)}
               </span>
             </div>
@@ -88,9 +98,22 @@ function MetricsGrid({
         })}
       </div>
       {metrics.date_from && (
-        <p className="text-[11px] text-muted-foreground">
-          {metrics.date_from} — {metrics.date_to}
-        </p>
+        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+          <span>Period:</span>
+          <span className="font-medium text-foreground">
+            {new Date(metrics.date_from).toLocaleDateString("en-GB", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            })}
+            {" – "}
+            {new Date(metrics.date_to!).toLocaleDateString("en-GB", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            })}
+          </span>
+        </div>
       )}
     </>
   );
@@ -106,7 +129,7 @@ function AdTab({
   accountId: string;
 }) {
   return (
-    <div className="flex flex-col gap-0 divide-y divide-border">
+    <div className="flex flex-col divide-y divide-border">
       {/* Performance */}
       <div className="px-5 py-4">
         <SectionLabel icon={TrendingUp} label="Performance" />
@@ -116,6 +139,61 @@ function AdTab({
           currency={currency}
         />
       </div>
+
+      {/* Creative copy */}
+      {(ad.headline || ad.cta || ad.primary_text) && (
+        <div className="px-5 py-4">
+          <SectionLabel icon={Pencil} label="Creative copy" />
+          <div className="flex flex-col gap-3">
+            {ad.headline && (
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">
+                  Headline
+                </p>
+                <div className="rounded-md bg-muted/40 px-3 py-2.5">
+                  <p className="text-sm font-medium leading-snug">
+                    {ad.headline}
+                  </p>
+                </div>
+              </div>
+            )}
+            {ad.cta && (
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">
+                  CTA
+                </p>
+                <div className="rounded-md bg-muted/40 px-3 py-2.5 flex flex-col gap-1">
+                  <p className="text-sm font-medium">
+                    {ad.cta.replace(/_/g, " ")}
+                  </p>
+                  {ad.cta_url && (
+                    <a
+                      href={ad.cta_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-muted-foreground hover:text-primary underline underline-offset-2 truncate transition-colors"
+                    >
+                      {ad.cta_url}
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+            {ad.primary_text && (
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">
+                  Primary text
+                </p>
+                <div className="max-h-40 overflow-y-auto rounded-md bg-muted/40 px-3 py-2.5">
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/90">
+                    {ad.primary_text}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Structure */}
       <div className="px-5 py-4">
@@ -130,56 +208,50 @@ function AdTab({
               <span className="text-xs text-muted-foreground w-20 shrink-0">
                 {label}
               </span>
-              <span className="text-sm font-semibold text-right break-all">
+              <span className="text-sm font-medium text-right wrap-break-words min-w-0">
                 {val || "—"}
               </span>
             </div>
           ))}
-        </div>
-      </div>
-
-      {/* IDs */}
-      <div className="px-5 py-4">
-        <SectionLabel icon={Info} label="IDs" />
-        <div className="flex flex-col gap-2">
-          {[
-            ["Account", accountId],
-            ["Campaign", ad.campaign_id],
-            ["Ad set", ad.adset_id],
-            ["Ad", ad.ad_id],
-          ].map(([label, val]) => (
-            <div
-              key={label}
-              className="flex items-center justify-between gap-4"
-            >
-              <span className="text-xs text-muted-foreground w-20 shrink-0">
-                {label}
-              </span>
-              <span className="text-sm font-semibold font-mono break-all">
-                {val || "—"}
-              </span>
-            </div>
-          ))}
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex items-start justify-between gap-4">
             <span className="text-xs text-muted-foreground w-20 shrink-0">
               Launched
             </span>
-            <span className="text-sm font-semibold">
+            <span className="text-sm font-medium text-right">
               {ad.launched_at
-                ? new Date(ad.launched_at).toLocaleDateString()
+                ? new Date(ad.launched_at).toLocaleDateString("en-GB", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })
                 : "—"}
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-4 pt-0.5">
+            <span className="text-xs text-muted-foreground w-20 shrink-0">
+              Status
+            </span>
+            <span
+              className={cn(
+                "text-xs font-semibold uppercase tracking-wide px-2 py-0.5 rounded",
+                ad.status === "ACTIVE"
+                  ? "bg-emerald-100 text-emerald-700"
+                  : "bg-muted text-muted-foreground"
+              )}
+            >
+              {ad.status}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Ads Manager link */}
-      <div className="px-5 py-3">
+      {/* Ads Manager */}
+      <div className="px-5 py-4">
         <a
           href={`https://www.facebook.com/adsmanager/manage/ads?act=${accountId}&selected_ad_ids=${ad.ad_id}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors"
+          className="flex items-center justify-center gap-2 w-full rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
         >
           <ExternalLink className="size-3.5" />
           Open in Ads Manager
@@ -237,7 +309,7 @@ export function AdsSheet({ creative, open, onClose }: Props) {
                   unoptimized
                 />
               )}
-              <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
+              <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/20 to-transparent" />
               {isVideo && creative.url && (
                 <button
                   onClick={() => setPlaying(true)}
@@ -248,37 +320,33 @@ export function AdsSheet({ creative, open, onClose }: Props) {
                   </div>
                 </button>
               )}
-              <div className="absolute bottom-0 left-0 right-0 px-4 pb-4 flex flex-col gap-1">
-                <p className="text-white text-base font-semibold leading-snug">
+              {/* Bottom overlay — headline + badges */}
+              <div className="absolute bottom-0 left-0 right-0 px-4 pb-4 flex flex-col gap-2">
+                <p className="text-white text-base font-semibold leading-snug drop-shadow-sm">
                   {rep?.headline || rep?.ad_name || ""}
                 </p>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-1.5">
                   <Chip
                     className={
-                      creative.status === "ACTIVE"
+                      rep?.status === "ACTIVE"
                         ? "bg-emerald-500/25 text-emerald-300"
                         : "bg-white/15 text-white/60"
                     }
                   >
-                    {creative.status}
+                    {rep?.status}
                   </Chip>
                   <Chip className="bg-white/15 text-white/70 capitalize">
                     {creative.creative_type}
                   </Chip>
-                  {creative.cta && (
-                    <Chip className="bg-white/15 text-white/70">
-                      {creative.cta.replace(/_/g, " ")}
-                    </Chip>
-                  )}
                   {creative.ad_count > 1 && (
                     <Chip className="bg-white/15 text-white/70">
                       {creative.ad_count} ads
                     </Chip>
                   )}
-                  <Chip className="bg-white/15 text-white/50 font-mono">
-                    Creative ID: {creative.creative_id}
-                  </Chip>
                 </div>
+                <p className="text-[10px] text-white/40 font-mono">
+                  Creative {creative.creative_id}
+                </p>
               </div>
             </>
           )}
@@ -293,25 +361,26 @@ export function AdsSheet({ creative, open, onClose }: Props) {
         {/* ── Per-ad tabs ────────────────────────────────────────── */}
         {creative.ads.length > 0 && (
           <>
-            {/* Tab bar */}
-            <div className="flex border-b border-border overflow-x-auto shrink-0">
+            <div className="flex border-b border-border overflow-x-auto shrink-0 bg-muted/30">
               {creative.ads.map((ad, i) => (
                 <button
                   key={ad.ad_id}
                   onClick={() => setActiveTab(i)}
                   className={cn(
-                    "px-4 py-2.5 text-xs font-medium whitespace-nowrap shrink-0 border-b-2 transition-colors",
+                    "px-4 py-3 text-xs font-medium whitespace-nowrap shrink-0 border-b-2 transition-colors flex flex-col items-start gap-0.5",
                     activeTab === i
-                      ? "border-primary text-primary"
-                      : "border-transparent text-muted-foreground hover:text-foreground"
+                      ? "border-primary text-primary bg-background"
+                      : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50"
                   )}
                 >
-                  {creative.ads.length === 1 ? "Ad detail" : `Ad ${i + 1}`}
+                  <span>{`Ad ${i + 1}`}</span>
+                  <span className="text-[10px] truncate max-w-28 opacity-60">
+                    {ad.ad_name}
+                  </span>
                 </button>
               ))}
             </div>
 
-            {/* Active tab content */}
             <AdTab
               ad={creative.ads[activeTab]}
               currency={currency}
