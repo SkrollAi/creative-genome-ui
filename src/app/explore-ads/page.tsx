@@ -1,7 +1,6 @@
 import { AdsToolbar } from "./ui/ads-toolbar";
 import { AdsContent } from "./ui/ads-content";
 import { FiltersReset } from "./ui/filters-reset";
-import { RerunAdsButton } from "./ui/rerun-ads-button";
 
 export default function ExploreAdsPage() {
   return (
@@ -13,7 +12,7 @@ export default function ExploreAdsPage() {
         </p>
       </div>
       <FiltersReset />
-      <AdsToolbar actions={<RerunAdsButton />} />
+      <AdsToolbar />
       <AdsContent />
     </div>
   );

@@ -8,9 +8,6 @@ import { getMetricDefs, useAdsMetrics } from "./ads-metrics-store";
 import { useAdAccount } from "@/context/ad-account-context";
 
 export type AdMetrics = {
-  ad_id: string;
-  date_from: string;
-  date_to: string;
   spend: number;
   impressions: number;
   reach: number;
@@ -25,54 +22,70 @@ export type AdMetrics = {
   hook_rate: number;
   hold_rate: number;
   atc_rate: number;
+  atc: number;
+  p25_views: number;
+  p75_views: number;
+  purchase_value: number;
+  ad_id?: string;
+  date_from?: string;
+  date_to?: string;
 };
 
-export type Ad = {
-  id: string;
+export type AdEntry = {
   ad_id: string;
-  ad_account_id: string;
   ad_name: string;
-  campaign_id: string;
-  campaign_name: string;
   adset_id: string;
   adset_name: string;
-  creative_type: "video" | "image";
-  url: string;
-  thumbnail_url: string;
-  headline: string;
-  cta: string;
-  cta_url: string;
-  launched_at: string;
-  primary_text: string;
+  campaign_id: string;
+  campaign_name: string;
   status: "ACTIVE" | "PAUSED";
-  synced_at: string;
+  launched_at: string;
+  headline: string;
   metrics: AdMetrics | null;
 };
 
-type Props = { ad: Ad; onSelect: (ad: Ad) => void };
+export type Creative = {
+  creative_id: string;
+  creative_type: "video" | "image";
+  url: string;
+  thumbnail_url: string;
+  cta: string;
+  cta_url: string;
+  launched_at: string;
+  status: "ACTIVE" | "PAUSED";
+  ad_count: number;
+  metrics: AdMetrics | null;
+  ads: AdEntry[];
+};
 
-export function AdsCard({ ad, onSelect }: Props) {
+type Props = { creative: Creative; onSelect: (creative: Creative) => void };
+
+export function AdsCard({ creative, onSelect }: Props) {
   const { selected } = useAdsMetrics();
   const { selected: account } = useAdAccount();
   const metricDefs = getMetricDefs(account?.currency ?? "USD");
   const selectedDefs = metricDefs.filter((d) => selected.includes(d.key));
   const [playing, setPlaying] = useState(false);
 
+  const rep = creative.ads[0]; // representative ad — highest spend
   const previewSrc =
-    ad.creative_type === "video" ? ad.thumbnail_url || ad.url : ad.url;
-  const isVideo = ad.creative_type === "video";
-  const hasVideoUrl = isVideo && !!ad.url;
+    creative.creative_type === "video"
+      ? creative.thumbnail_url || creative.url
+      : creative.url;
+  const isVideo = creative.creative_type === "video";
+  const hasVideoUrl = isVideo && !!creative.url;
+  const extraAds = creative.ad_count - 1;
 
   return (
     <div
       className="rounded-xl border border-border bg-card overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-      onClick={() => onSelect(ad)}
+      onClick={() => onSelect(creative)}
     >
       {/* Creative area */}
       <div className="relative aspect-3/4 bg-linear-to-br from-slate-800 to-slate-900 overflow-hidden">
         {playing && hasVideoUrl ? (
           <video
-            src={ad.url}
+            src={creative.url}
             className="absolute inset-0 w-full h-full object-cover"
             autoPlay
             controls
@@ -83,7 +96,7 @@ export function AdsCard({ ad, onSelect }: Props) {
             {previewSrc && (
               <Image
                 src={previewSrc}
-                alt={ad.headline || ad.ad_name}
+                alt={rep?.headline || rep?.ad_name || ""}
                 fill
                 className="object-cover"
                 unoptimized
@@ -104,6 +117,13 @@ export function AdsCard({ ad, onSelect }: Props) {
               {isVideo ? "Video" : "Image"}
             </div>
 
+            {/* +N more badge */}
+            {extraAds > 0 && (
+              <div className="absolute top-3 right-3 bg-black/55 text-white text-xs font-medium px-2 py-1 rounded-full backdrop-blur-sm">
+                +{extraAds} more
+              </div>
+            )}
+
             {/* Play button overlay */}
             {hasVideoUrl && (
               <button
@@ -121,7 +141,7 @@ export function AdsCard({ ad, onSelect }: Props) {
 
             {/* Headline overlay */}
             <p className="absolute bottom-3 left-3 right-3 text-white text-sm font-semibold leading-snug">
-              {ad.headline || ad.ad_name}
+              {rep?.headline || rep?.ad_name || ""}
             </p>
           </>
         )}
@@ -132,17 +152,17 @@ export function AdsCard({ ad, onSelect }: Props) {
         {/* Ad name + status */}
         <div className="flex items-center justify-between gap-2">
           <span className="text-xs text-muted-foreground truncate min-w-0">
-            {ad.ad_name}
+            {rep?.ad_name || "—"}
           </span>
           <span
             className={cn(
               "text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded shrink-0",
-              ad.status === "ACTIVE"
+              creative.status === "ACTIVE"
                 ? "bg-emerald-100 text-emerald-700"
                 : "bg-muted text-muted-foreground"
             )}
           >
-            {ad.status}
+            {creative.status}
           </span>
         </div>
 
@@ -154,8 +174,8 @@ export function AdsCard({ ad, onSelect }: Props) {
               {selectedDefs.map((def) => {
                 const val =
                   def.key === "launched_at"
-                    ? ad.launched_at
-                    : (ad.metrics?.[def.key as keyof AdMetrics] as
+                    ? creative.launched_at
+                    : (creative.metrics?.[def.key as keyof AdMetrics] as
                         | number
                         | null
                         | undefined);

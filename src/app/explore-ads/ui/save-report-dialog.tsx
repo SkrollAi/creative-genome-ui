@@ -43,10 +43,11 @@ export function SaveReportDialog({ open, onClose }: Props) {
           campaign_name: filters.campaign_name,
           creative_type: filters.type,
           status: filters.status,
-          sort_by: filters.sort,
-          sort_order: filters.order,
+          sort: filters.sort,
+          order: filters.order,
           limit: filters.limit,
-          date_range: "last_14d",
+          date_from: filters.date_from,
+          date_to: filters.date_to,
         },
       });
       qc.invalidateQueries({ queryKey: ["reports", selected?.account_id] });

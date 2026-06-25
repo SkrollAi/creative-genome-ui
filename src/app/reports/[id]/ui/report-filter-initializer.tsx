@@ -1,30 +1,39 @@
 "use client";
 
 import { useEffect } from "react";
-import { useAdsFilters } from "@/app/explore-ads/ui/use-ads-filters";
+import {
+  useAdsFilters,
+  daysToAbsolute,
+} from "@/app/explore-ads/ui/use-ads-filters";
 import { useReport } from "./use-report";
 
 export function ReportFilterInitializer({ id }: { id: string }) {
   const { data: report } = useReport(id);
   const { setFilters, reset } = useAdsFilters();
 
-  // Clear on mount so we never show stale explore-ads state
   useEffect(() => {
     reset();
   }, [id]);
 
-  // Apply saved filters once report loads
   useEffect(() => {
     if (!report) return;
     const f = report.filters;
+
+    // Resolve date range — saved reports store absolute date_from/date_to
+    const defaultDates = daysToAbsolute(7);
+    const date_from = f.date_from ?? defaultDates.date_from;
+    const date_to = f.date_to ?? defaultDates.date_to;
+
     setFilters({
       ad_name: f.ad_name ?? "",
       adset_name: f.adset_name ?? "",
       campaign_name: f.campaign_name ?? "",
       type: f.creative_type ?? "all",
       status: f.status ?? "all",
-      sort: f.sort_by ?? "spend",
-      order: f.sort_order ?? "desc",
+      sort: f.sort ?? "spend",
+      order: f.order ?? "desc",
+      date_from,
+      date_to,
       page: 1,
     });
   }, [report?.id]);

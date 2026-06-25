@@ -16,10 +16,11 @@ export type Report = {
     campaign_name?: string;
     creative_type?: string;
     status?: string;
-    sort_by?: string;
-    sort_order?: string;
+    sort?: string;
+    order?: string;
     limit?: number;
-    date_range?: string | { from: string; to: string };
+    date_from?: string;
+    date_to?: string;
   };
   last_rerun_at: string | null;
   created_at: string;
@@ -51,35 +52,5 @@ export function useDeleteReport() {
       toast.success("Report deleted");
     },
     onError: () => toast.error("Failed to delete report"),
-  });
-}
-
-type RerunArgs = {
-  report_id: string;
-  date_range?: string | { from: string; to: string };
-};
-
-export function useRerunReport() {
-  const qc = useQueryClient();
-  const { selected } = useAdAccount();
-  return useMutation({
-    mutationFn: ({ report_id, date_range }: RerunArgs) =>
-      api.post("/creative_genome/reports/rerun", {
-        report_id,
-        ...(date_range ? { date_range } : {}),
-      }),
-    onSuccess: (res, { report_id }) => {
-      qc.invalidateQueries({ queryKey: ["reports", selected?.account_id] });
-      qc.invalidateQueries({ queryKey: ["report", report_id] });
-      qc.invalidateQueries({ queryKey: ["ads", selected?.account_id] });
-      const { metrics_saved, ads_queried } = res.data.data ?? {};
-      toast.success(
-        `Synced — ${metrics_saved ?? 0} metrics updated across ${
-          ads_queried ?? 0
-        } ads`
-      );
-    },
-    onError: (err: any) =>
-      toast.error(err?.response?.data?.error ?? "Failed to rerun report"),
   });
 }

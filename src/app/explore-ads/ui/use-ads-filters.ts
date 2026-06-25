@@ -20,6 +20,29 @@ export const STATUS_OPTIONS = [
   { label: "Paused", value: "paused" },
 ];
 
+export const DATE_PRESETS = [
+  { label: "Last 7 days", days: 7 },
+  { label: "Last 14 days", days: 14 },
+  { label: "Last 30 days", days: 30 },
+  { label: "Last 90 days", days: 90 },
+];
+
+export function daysToAbsolute(days: number): {
+  date_from: string;
+  date_to: string;
+} {
+  const to = new Date();
+  const from = new Date(to.getTime() - (days - 1) * 24 * 60 * 60 * 1000);
+  return {
+    date_from: from.toISOString().split("T")[0],
+    date_to: to.toISOString().split("T")[0],
+  };
+}
+
+function defaultDates() {
+  return daysToAbsolute(7);
+}
+
 export type AdsFilters = {
   ad_name: string;
   adset_name: string;
@@ -28,21 +51,26 @@ export type AdsFilters = {
   status: string;
   sort: string;
   order: string;
+  date_from: string;
+  date_to: string;
   page: number;
   limit: number;
 };
 
-export const DEFAULT_FILTERS: AdsFilters = {
-  ad_name: "",
-  adset_name: "",
-  campaign_name: "",
-  type: "all",
-  status: "all",
-  sort: "spend",
-  order: "desc",
-  page: 1,
-  limit: 20,
-};
+export function getDefaultFilters(): AdsFilters {
+  return {
+    ad_name: "",
+    adset_name: "",
+    campaign_name: "",
+    type: "all",
+    status: "all",
+    sort: "spend",
+    order: "desc",
+    ...defaultDates(),
+    page: 1,
+    limit: 20,
+  };
+}
 
 type AdsFiltersStore = {
   filters: AdsFilters;
@@ -51,10 +79,12 @@ type AdsFiltersStore = {
 };
 
 export const useAdsFiltersStore = create<AdsFiltersStore>((set) => ({
-  filters: { ...DEFAULT_FILTERS },
+  filters: getDefaultFilters(),
   setFilters: (partial) =>
-    set((s) => ({ filters: { ...s.filters, ...partial } })),
-  reset: () => set({ filters: { ...DEFAULT_FILTERS } }),
+    set((s) => ({
+      filters: { ...s.filters, ...partial, page: partial.page ?? 1 },
+    })),
+  reset: () => set({ filters: getDefaultFilters() }),
 }));
 
 export function useAdsFilters() {

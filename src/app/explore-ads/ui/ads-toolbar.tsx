@@ -21,6 +21,8 @@ import { useAds } from "./use-ads";
 import { MetricsSelector } from "./metrics-selector";
 import { SaveReportDialog } from "./save-report-dialog";
 import { SmartSearch } from "./smart-search";
+import { DateRangePicker } from "./date-range-picker";
+import { MetricsFreshness } from "./metrics-freshness";
 import { useAdAccount } from "@/context/ad-account-context";
 
 type Props = { actions?: React.ReactNode; hideSave?: boolean };
@@ -39,6 +41,7 @@ export function AdsToolbar({ actions, hideSave }: Props) {
       {/* Row 1 — smart search + injected actions + save */}
       <div className="flex items-start gap-2">
         <SmartSearch />
+        <DateRangePicker />
         {actions}
         {!hideSave && (
           <Button
@@ -122,12 +125,16 @@ export function AdsToolbar({ actions, hideSave }: Props) {
         {/* Metrics */}
         <MetricsSelector />
 
-        {/* Count */}
-        {pagination && (
-          <span className="text-xs text-muted-foreground whitespace-nowrap ml-auto">
-            {isFetching ? "Loading…" : `${pagination.total_items} ads`}
-          </span>
-        )}
+        {/* Count + freshness */}
+        <div className="ml-auto flex items-center gap-2">
+          {pagination && (
+            <span className="text-xs font-medium text-foreground whitespace-nowrap bg-muted px-2 py-0.5 rounded-md">
+              {pagination.total_items} creatives
+            </span>
+          )}
+          <div className="w-px h-3.5 bg-border" />
+          <MetricsFreshness />
+        </div>
       </div>
     </div>
   );

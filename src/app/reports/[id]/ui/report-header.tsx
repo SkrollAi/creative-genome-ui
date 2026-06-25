@@ -2,23 +2,9 @@
 
 import { useReport } from "./use-report";
 
-function timeAgo(dateStr: string | null) {
-  if (!dateStr) return "Never synced";
-  const normalized = dateStr.includes("Z")
-    ? dateStr
-    : dateStr.replace(" ", "T") + "Z";
-  const diff = Date.now() - new Date(normalized).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 60) return `Synced ${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `Synced ${hrs}h ago`;
-  return `Synced ${Math.floor(hrs / 24)}d ago`;
-}
-
-function dateRangeLabel(dr: string | { from: string; to: string } | undefined) {
-  if (!dr) return "last 14 days";
-  if (typeof dr === "string") return dr.replace(/_/g, " ");
-  return `${dr.from} – ${dr.to}`;
+function dateRangeLabel(date_from?: string, date_to?: string) {
+  if (date_from && date_to) return `${date_from} – ${date_to}`;
+  return "";
 }
 
 export function ReportHeader({ id }: { id: string }) {
@@ -31,8 +17,7 @@ export function ReportHeader({ id }: { id: string }) {
         {report.name}
       </h1>
       <p className="text-xs text-muted-foreground mt-0.5">
-        {timeAgo(report.last_rerun_at)} ·{" "}
-        {dateRangeLabel(report.filters.date_range)}
+        {dateRangeLabel(report.filters.date_from, report.filters.date_to)}
       </p>
     </div>
   );
