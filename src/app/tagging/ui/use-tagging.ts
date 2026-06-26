@@ -4,21 +4,17 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { create } from "zustand";
 import api from "@/lib/api";
 import { useAdAccount } from "@/context/ad-account-context";
-import { daysToAbsolute } from "@/app/explore-ads/ui/use-ads-filters";
 import type { Creative } from "@/app/explore-ads/ui/ads-card";
-
-// ── date filter store (tagging-scoped, independent of explore-ads) ─────────
+import type { Report } from "@/app/reports/ui/use-reports";
 
 export type TaggingFilters = {
-  date_from: string;
-  date_to: string;
-  sort: string;
   page: number;
   creative_type: "all" | "video" | "image";
+  selected_report: Report | null;
 };
 
 function defaultFilters(): TaggingFilters {
-  return { ...daysToAbsolute(7), sort: "is_tagged", page: 1, creative_type: "all" };
+  return { page: 1, creative_type: "all", selected_report: null };
 }
 
 type TaggingFiltersStore = {
@@ -41,19 +37,30 @@ export const useTaggingFiltersStore = create<TaggingFiltersStore>((set) => ({
 export function useTaggingCreatives() {
   const { selected } = useAdAccount();
   const { filters } = useTaggingFiltersStore();
+  const report = filters.selected_report;
 
   return useQuery({
     queryKey: ["tagging-creatives", selected?.account_id, filters],
     queryFn: async () => {
       const res = await api.post("/creative_genome/ads/list", {
         account_id: selected?.account_id,
-        sort: filters.sort,
-        order: filters.sort === "is_tagged" ? "asc" : "desc",
-        date_from: filters.date_from,
-        date_to: filters.date_to,
+        date_from: report?.filters.date_from,
+        date_to: report?.filters.date_to,
+        sort: "is_tagged",
+        order: "asc",
+        ...(report?.filters.status &&
+          report.filters.status !== "all" && { status: report.filters.status }),
+        ...(report?.filters.search && { search: report.filters.search }),
+        ...(report?.filters.campaign_name && {
+          campaign_name: report.filters.campaign_name,
+        }),
+        ...(report?.filters.adset_name && {
+          adset_name: report.filters.adset_name,
+        }),
+        ...(report?.filters.ad_name && { ad_name: report.filters.ad_name }),
         page: filters.page,
         limit: 10,
-        ...(filters.creative_type !== "all" && { creative_type: filters.creative_type }),
+        creative_type: filters.creative_type,
       });
       return res.data.data as {
         creatives: Creative[];
@@ -66,7 +73,7 @@ export function useTaggingCreatives() {
         };
       };
     },
-    enabled: !!selected?.account_id && !!filters.date_from,
+    enabled: !!selected?.account_id && !!report,
     placeholderData: (prev) => prev,
   });
 }
@@ -117,6 +124,7 @@ export function useSaveTags() {
         queryKey: ["tagging-creatives", selected?.account_id],
       });
       qc.invalidateQueries({ queryKey: ["ads", selected?.account_id] });
+      qc.invalidateQueries({ queryKey: ["tag-library", selected?.account_id] });
     },
   });
 }

@@ -9,19 +9,24 @@ import {
   ImageIcon,
   Loader2,
   Check,
-  SlidersHorizontal,
-  ChevronDown,
   Tag,
+  ChevronsUpDown,
 } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import { useAdAccount } from "@/context/ad-account-context";
 import { currencySymbol } from "@/lib/currency";
@@ -32,17 +37,12 @@ import {
   useTaggingFiltersStore,
 } from "./use-tagging";
 
-import { SORT_OPTIONS } from "@/app/explore-ads/ui/use-ads-filters";
-
-const TAGGING_SORT_OPTIONS = [
-  { label: "Untagged first", value: "is_tagged" },
-  ...SORT_OPTIONS,
-];
 import { TaggingCreativeCard } from "./tagging-creative-card";
 import { TagCategorySection } from "./tag-category-section";
-import { TaggingDatePicker } from "./tagging-date-picker";
 import { AdsSheet } from "@/app/explore-ads/ui/ads-sheet";
 import type { Creative } from "@/app/explore-ads/ui/ads-card";
+import { useReports } from "@/app/reports/ui/use-reports";
+import type { Report } from "@/app/reports/ui/use-reports";
 
 export function TaggingContent() {
   const { selected: account } = useAdAccount();
@@ -51,6 +51,7 @@ export function TaggingContent() {
   const { data: library } = useTagLibrary();
   const { mutate: saveTags, isPending: isSaving } = useSaveTags();
   const { filters, setFilters, reset } = useTaggingFiltersStore();
+  const { data: reports, isLoading: reportsLoading } = useReports();
 
   const [selectedCreative, setSelectedCreative] = useState<Creative | null>(
     null
@@ -59,6 +60,7 @@ export function TaggingContent() {
   const [tags, setTags] = useState<Record<string, string[]>>({});
   const [playing, setPlaying] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
 
   const creatives = data?.creatives ?? [];
   const pagination = data?.pagination;
@@ -71,7 +73,7 @@ export function TaggingContent() {
   // clear right panel on filter change
   useEffect(() => {
     setSelectedCreative(null);
-  }, [filters.date_from, filters.date_to, filters.sort, filters.page]);
+  }, [filters.creative_type, filters.page, filters.selected_report?.id]);
 
   // when creative changes, prefill existing tags
   useEffect(() => {
@@ -122,41 +124,83 @@ export function TaggingContent() {
         {/* ── Left: creative list ───────────────────────────────────────── */}
         <div className="w-80 shrink-0 border-r border-border flex flex-col min-h-0">
           {/* Filters — fixed */}
-          <div className="px-3 pt-3 pb-3 border-b border-border flex flex-col gap-2.5 shrink-0">
-            {/* Row 1: sort + date */}
-            <div className="flex items-center gap-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-1.5 text-xs h-8 flex-1 justify-between"
-                  >
-                    <SlidersHorizontal className="size-3 shrink-0 text-muted-foreground" />
-                    <span className="truncate">
-                      {TAGGING_SORT_OPTIONS.find((o) => o.value === filters.sort)
-                        ?.label ?? "Sort"}
-                    </span>
-                    <ChevronDown className="size-3 text-muted-foreground shrink-0" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-52">
-                  <DropdownMenuRadioGroup
-                    value={filters.sort}
-                    onValueChange={(v) => setFilters({ sort: v, page: 1 })}
-                  >
-                    {TAGGING_SORT_OPTIONS.map((o) => (
-                      <DropdownMenuRadioItem key={o.value} value={o.value}>
-                        {o.label}
-                      </DropdownMenuRadioItem>
-                    ))}
-                  </DropdownMenuRadioGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <TaggingDatePicker />
-            </div>
+          <div className="px-3 pt-3 pb-2 border-b border-border flex flex-col gap-2 shrink-0">
+            {/* Report picker */}
+            <Popover open={reportOpen} onOpenChange={setReportOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  role="combobox"
+                  className="w-full justify-between h-8 text-xs font-normal"
+                >
+                  <span className="truncate">
+                    {filters.selected_report?.name ?? "Select a report…"}
+                  </span>
+                  <ChevronsUpDown className="size-3.5 text-muted-foreground shrink-0 ml-1" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-72 p-0" align="start">
+                <Command>
+                  <CommandInput
+                    placeholder="Search reports…"
+                    className="h-8 text-xs"
+                  />
+                  <CommandList>
+                    <CommandEmpty className="py-4 text-xs text-center text-muted-foreground">
+                      No reports found.
+                    </CommandEmpty>
+                    <CommandGroup>
+                      {reports?.map((r: Report) => (
+                        <CommandItem
+                          key={r.id}
+                          value={r.name}
+                          onSelect={() => {
+                            setFilters({ selected_report: r, page: 1 });
+                            setReportOpen(false);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "size-3.5 mr-2 shrink-0",
+                              filters.selected_report?.id === r.id
+                                ? "opacity-100"
+                                : "opacity-0"
+                            )}
+                          />
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-sm truncate">{r.name}</span>
+                            <span className="text-[10px] text-muted-foreground">
+                              {r.filters.date_from
+                                ? new Date(
+                                    r.filters.date_from
+                                  ).toLocaleDateString("en-US", {
+                                    month: "long",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  })
+                                : ""}
+                              {" – "}
+                              {r.filters.date_to
+                                ? new Date(
+                                    r.filters.date_to
+                                  ).toLocaleDateString("en-US", {
+                                    month: "long",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  })
+                                : ""}
+                            </span>
+                          </div>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
 
-            {/* Row 2: type segmented control */}
+            {/* Type segmented control */}
             <div className="flex items-center rounded-md border border-border overflow-hidden bg-muted/40">
               {(["all", "video", "image"] as const).map((t) => (
                 <button
@@ -177,7 +221,11 @@ export function TaggingContent() {
 
           {/* List — scrollable */}
           <div className="flex-1 min-h-0 overflow-y-auto py-2 px-2">
-            {isLoading || isFetching ? (
+            {!filters.selected_report ? (
+              <p className="text-center text-xs text-muted-foreground py-8 px-3">
+                Select a report to load creatives.
+              </p>
+            ) : isLoading || isFetching ? (
               <div className="flex items-center justify-center h-32 text-muted-foreground text-sm gap-2">
                 <Loader2 className="size-4 animate-spin" /> Loading…
               </div>
@@ -199,33 +247,35 @@ export function TaggingContent() {
           </div>
 
           {/* Pagination — fixed at bottom */}
-          <div className="border-t border-border px-3 py-2 flex items-center justify-between gap-2 shrink-0">
-            <span className="text-xs text-muted-foreground">
-              {pagination
-                ? `${pagination.current_page}/${pagination.total_pages} · ${pagination.total_items} creatives`
-                : "—"}
-            </span>
-            <div className="flex gap-1">
-              <Button
-                variant="outline"
-                size="icon"
-                className="size-7"
-                disabled={!pagination?.has_prev || isFetching}
-                onClick={() => setFilters({ page: filters.page - 1 })}
-              >
-                <ChevronLeft className="size-3.5" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                className="size-7"
-                disabled={!pagination?.has_next || isFetching}
-                onClick={() => setFilters({ page: filters.page + 1 })}
-              >
-                <ChevronRight className="size-3.5" />
-              </Button>
+          {filters.selected_report && (
+            <div className="border-t border-border px-3 py-2 flex items-center justify-between gap-2 shrink-0">
+              <span className="text-xs text-muted-foreground">
+                {pagination
+                  ? `${pagination.current_page}/${pagination.total_pages} · ${pagination.total_items} creatives`
+                  : "—"}
+              </span>
+              <div className="flex gap-1">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="size-7"
+                  disabled={!pagination?.has_prev || isFetching}
+                  onClick={() => setFilters({ page: filters.page - 1 })}
+                >
+                  <ChevronLeft className="size-3.5" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="size-7"
+                  disabled={!pagination?.has_next || isFetching}
+                  onClick={() => setFilters({ page: filters.page + 1 })}
+                >
+                  <ChevronRight className="size-3.5" />
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* ── Right: creative detail + categories ──────────────────────── */}
