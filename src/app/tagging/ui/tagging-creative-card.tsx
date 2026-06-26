@@ -61,11 +61,16 @@ export function TaggingCreativeCard({
         <p className="text-sm font-medium truncate">
           {rep?.ad_name || creative.creative_id}
         </p>
-        {creative.is_tagged && (
-          <p className="text-[10px] text-emerald-600 font-medium mt-0.5">
-            tagged
-          </p>
-        )}
+        <div className="flex items-center gap-1.5 mt-0.5">
+          {creative.is_tagged && (
+            <p className="text-[10px] text-emerald-600 font-medium">tagged</p>
+          )}
+          {creative.ad_count > 1 && (
+            <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">
+              +{creative.ad_count - 1} more
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Detail button */}

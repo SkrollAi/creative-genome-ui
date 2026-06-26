@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useAdAccount } from "@/context/ad-account-context";
+import { currencySymbol } from "@/lib/currency";
 import {
   useTaggingCreatives,
   useTagLibrary,
@@ -45,6 +46,7 @@ import type { Creative } from "@/app/explore-ads/ui/ads-card";
 
 export function TaggingContent() {
   const { selected: account } = useAdAccount();
+  const sym = currencySymbol(account?.currency ?? "USD");
   const { data, isLoading, isFetching } = useTaggingCreatives();
   const { data: library } = useTagLibrary();
   const { mutate: saveTags, isPending: isSaving } = useSaveTags();
@@ -120,36 +122,57 @@ export function TaggingContent() {
         {/* ── Left: creative list ───────────────────────────────────────── */}
         <div className="w-80 shrink-0 border-r border-border flex flex-col min-h-0">
           {/* Filters — fixed */}
-          <div className="px-3 py-3 border-b border-border flex items-center gap-2 shrink-0">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1.5 text-xs h-9 flex-1 justify-between"
+          <div className="px-3 pt-3 pb-3 border-b border-border flex flex-col gap-2.5 shrink-0">
+            {/* Row 1: sort + date */}
+            <div className="flex items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5 text-xs h-8 flex-1 justify-between"
+                  >
+                    <SlidersHorizontal className="size-3 shrink-0 text-muted-foreground" />
+                    <span className="truncate">
+                      {TAGGING_SORT_OPTIONS.find((o) => o.value === filters.sort)
+                        ?.label ?? "Sort"}
+                    </span>
+                    <ChevronDown className="size-3 text-muted-foreground shrink-0" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-52">
+                  <DropdownMenuRadioGroup
+                    value={filters.sort}
+                    onValueChange={(v) => setFilters({ sort: v, page: 1 })}
+                  >
+                    {TAGGING_SORT_OPTIONS.map((o) => (
+                      <DropdownMenuRadioItem key={o.value} value={o.value}>
+                        {o.label}
+                      </DropdownMenuRadioItem>
+                    ))}
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <TaggingDatePicker />
+            </div>
+
+            {/* Row 2: type segmented control */}
+            <div className="flex items-center rounded-md border border-border overflow-hidden bg-muted/40">
+              {(["all", "video", "image"] as const).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setFilters({ creative_type: t, page: 1 })}
+                  className={cn(
+                    "flex-1 text-xs py-1.5 capitalize transition-colors border-r border-border last:border-r-0",
+                    filters.creative_type === t
+                      ? "bg-background text-foreground font-medium shadow-sm"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  )}
                 >
-                  <SlidersHorizontal className="size-3.5 shrink-0" />
-                  <span className="truncate font-semibold">
-                    {TAGGING_SORT_OPTIONS.find((o) => o.value === filters.sort)
-                      ?.label ?? "Sort"}
-                  </span>
-                  <ChevronDown className="size-3.5 text-muted-foreground shrink-0" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52">
-                <DropdownMenuRadioGroup
-                  value={filters.sort}
-                  onValueChange={(v) => setFilters({ sort: v, page: 1 })}
-                >
-                  {TAGGING_SORT_OPTIONS.map((o) => (
-                    <DropdownMenuRadioItem key={o.value} value={o.value}>
-                      {o.label}
-                    </DropdownMenuRadioItem>
-                  ))}
-                </DropdownMenuRadioGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <TaggingDatePicker />
+                  {t}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* List — scrollable */}
@@ -243,6 +266,12 @@ export function TaggingContent() {
                           )}
                           {isVideo ? "Video" : "Image"}
                         </div>
+                        {/* +N more badge */}
+                        {selectedCreative.ad_count > 1 && (
+                          <div className="absolute top-3 right-3 bg-black/55 text-white text-xs font-medium px-2 py-1 rounded-full backdrop-blur-sm">
+                            +{selectedCreative.ad_count - 1} more
+                          </div>
+                        )}
                         {isVideo && selectedCreative.url && (
                           <button
                             onClick={() => setPlaying(true)}
@@ -278,8 +307,8 @@ export function TaggingContent() {
                         value: (() => {
                           const s = selectedCreative.metrics?.spend ?? 0;
                           return s >= 1000
-                            ? `$${(s / 1000).toFixed(1)}k`
-                            : `$${s.toFixed(0)}`;
+                            ? `${sym}${(s / 1000).toFixed(1)}k`
+                            : `${sym}${s.toFixed(0)}`;
                         })(),
                       },
                       {

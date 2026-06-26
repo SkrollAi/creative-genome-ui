@@ -14,10 +14,11 @@ export type TaggingFilters = {
   date_to: string;
   sort: string;
   page: number;
+  creative_type: "all" | "video" | "image";
 };
 
 function defaultFilters(): TaggingFilters {
-  return { ...daysToAbsolute(7), sort: "is_tagged", page: 1 };
+  return { ...daysToAbsolute(7), sort: "is_tagged", page: 1, creative_type: "all" };
 }
 
 type TaggingFiltersStore = {
@@ -52,6 +53,7 @@ export function useTaggingCreatives() {
         date_to: filters.date_to,
         page: filters.page,
         limit: 10,
+        ...(filters.creative_type !== "all" && { creative_type: filters.creative_type }),
       });
       return res.data.data as {
         creatives: Creative[];

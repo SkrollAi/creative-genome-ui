@@ -10,7 +10,7 @@ import { useAdAccount } from "@/context/ad-account-context";
 export const TAG_COLORS = ["bg-muted text-muted-foreground"];
 
 function TagChips({ tags }: { tags: Record<string, string[]> }) {
-  const MAX = 3;
+  const MAX = 2;
   const entries = Object.entries(tags);
   const flat: { tag: string; colorIdx: number }[] = entries.flatMap(
     ([, vals], ci) => vals.map((tag) => ({ tag, colorIdx: ci }))
