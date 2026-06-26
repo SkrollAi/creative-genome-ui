@@ -7,6 +7,39 @@ import { cn } from "@/lib/utils";
 import { getMetricDefs, useAdsMetrics } from "./ads-metrics-store";
 import { useAdAccount } from "@/context/ad-account-context";
 
+export const TAG_COLORS = ["bg-muted text-muted-foreground"];
+
+function TagChips({ tags }: { tags: Record<string, string[]> }) {
+  const MAX = 3;
+  const entries = Object.entries(tags);
+  const flat: { tag: string; colorIdx: number }[] = entries.flatMap(
+    ([, vals], ci) => vals.map((tag) => ({ tag, colorIdx: ci }))
+  );
+  const visible = flat.slice(0, MAX);
+  const overflow = flat.length - MAX;
+
+  return (
+    <div className="flex flex-wrap gap-1">
+      {visible.map(({ tag, colorIdx }) => (
+        <span
+          key={tag}
+          className={cn(
+            "text-[10px] font-medium px-1.5 py-0.5 rounded-full",
+            TAG_COLORS[colorIdx % TAG_COLORS.length]
+          )}
+        >
+          {tag}
+        </span>
+      ))}
+      {overflow > 0 && (
+        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">
+          +{overflow} more
+        </span>
+      )}
+    </div>
+  );
+}
+
 export type AdMetrics = {
   spend: number;
   impressions: number;
@@ -22,11 +55,6 @@ export type AdMetrics = {
   hook_rate: number;
   hold_rate: number;
   atc_rate: number;
-  atc: number;
-  p25_views: number;
-  p75_views: number;
-  purchase_value: number;
-  ad_id?: string;
   date_from?: string;
   date_to?: string;
 };
@@ -53,6 +81,9 @@ export type Creative = {
   url: string;
   thumbnail_url: string;
   ad_count: number;
+  tags: Record<string, string[]>;
+  is_tagged: boolean;
+  tagged_at: string | null;
   metrics: AdMetrics | null;
   ads: AdEntry[];
 };
@@ -164,6 +195,15 @@ export function AdsCard({ creative, onSelect }: Props) {
             {rep?.status}
           </span>
         </div>
+
+        {/* Tag chips */}
+        {creative.is_tagged ? (
+          <TagChips tags={creative.tags} />
+        ) : (
+          <span className="text-[10px] text-muted-foreground/60 border border-dashed border-muted-foreground/30 rounded-full px-2 py-0.5 w-fit">
+            untagged
+          </span>
+        )}
 
         {/* Metrics grid */}
         {selectedDefs.length > 0 && (

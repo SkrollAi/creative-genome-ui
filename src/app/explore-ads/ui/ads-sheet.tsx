@@ -8,11 +8,13 @@ import {
   LayoutGrid,
   ExternalLink,
   Pencil,
+  Tag,
 } from "lucide-react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { getMetricDefs } from "./ads-metrics-store";
 import { useAdAccount } from "@/context/ad-account-context";
+import { TAG_COLORS } from "./ads-card";
 import type { Creative, AdEntry, AdMetrics } from "./ads-card";
 
 type Props = { creative: Creative | null; open: boolean; onClose: () => void };
@@ -213,20 +215,6 @@ function AdTab({
               </span>
             </div>
           ))}
-          <div className="flex items-start justify-between gap-4">
-            <span className="text-xs text-muted-foreground w-20 shrink-0">
-              Launched
-            </span>
-            <span className="text-sm font-medium text-right">
-              {ad.launched_at
-                ? new Date(ad.launched_at).toLocaleDateString("en-GB", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  })
-                : "—"}
-            </span>
-          </div>
           <div className="flex items-center justify-between gap-4 pt-0.5">
             <span className="text-xs text-muted-foreground w-20 shrink-0">
               Status
@@ -351,6 +339,30 @@ export function AdsSheet({ creative, open, onClose }: Props) {
             </>
           )}
         </div>
+
+        {/* ── Tags ───────────────────────────────────────────────── */}
+        {creative.is_tagged && Object.keys(creative.tags ?? {}).length > 0 && (
+          <div className="px-5 py-4 border-b border-border">
+            <SectionLabel icon={Tag} label="Tags" />
+            <div className="flex flex-col gap-2 mt-3">
+              {Object.entries(creative.tags).map(([key, vals], ci) => (
+                <div key={key} className="flex flex-wrap gap-1">
+                  {vals.map((tag) => (
+                    <span
+                      key={tag}
+                      className={cn(
+                        "text-[11px] font-medium px-2 py-0.5 rounded-full",
+                        TAG_COLORS[ci % TAG_COLORS.length]
+                      )}
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ── Aggregated metrics ─────────────────────────────────── */}
         <div className="px-5 py-4 border-b border-border">

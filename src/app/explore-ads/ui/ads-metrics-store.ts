@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { formatDistanceToNow } from "date-fns";
 import { currencySymbol } from "@/lib/currency";
 
 export type MetricKey =
@@ -87,11 +88,7 @@ export const METRIC_DEFS: MetricDef[] = [
     unit: "date",
     format: (v) => {
       if (v == null || v === "") return "—";
-      const d = new Date(v as string);
-      const dd = String(d.getDate()).padStart(2, "0");
-      const mm = String(d.getMonth() + 1).padStart(2, "0");
-      const yy = String(d.getFullYear()).slice(2);
-      return `${dd}/${mm}/${yy}`;
+      return formatDistanceToNow(new Date(v as string), { addSuffix: true });
     },
   },
 ];
