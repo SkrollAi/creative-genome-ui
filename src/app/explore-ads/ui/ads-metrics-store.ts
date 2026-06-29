@@ -23,6 +23,7 @@ export type MetricDef = {
   key: MetricKey;
   label: string;
   unit: "$" | "%" | "×" | "#" | "date";
+  higherIsBetter: boolean;
   format: (v: number | string | null | undefined, sym?: string) => string;
 };
 
@@ -38,7 +39,11 @@ const fmtPct1 = (v: V) => {
 };
 const fmtNum = (v: V) => {
   const x = n(v);
-  return x == null ? "—" : x >= 1000 ? `${(x / 1000).toFixed(1)}k` : `${x}`;
+  return x == null
+    ? "—"
+    : x >= 1000
+    ? `${(x / 1000).toFixed(1)}k`
+    : `${Math.round(x)}`;
 };
 const fmt$ = (v: V, sym = "$") => {
   const x = n(v);
@@ -52,31 +57,81 @@ const fmt$2 = (v: V, sym = "$") => {
 };
 
 export const METRIC_DEFS: MetricDef[] = [
-  { key: "spend", label: "Spend", unit: "$", format: fmt$ },
+  {
+    key: "spend",
+    label: "Spend",
+    unit: "$",
+    higherIsBetter: true,
+    format: fmt$,
+  },
   {
     key: "roas",
     label: "ROAS",
     unit: "×",
+    higherIsBetter: true,
     format: (v) => {
       const x = n(v);
       return x == null ? "—" : `${x.toFixed(2)}×`;
     },
   },
-  { key: "cpa", label: "CPA", unit: "$", format: fmt$ },
-  { key: "ctr", label: "CTR", unit: "%", format: fmtPct },
-  { key: "cpm", label: "CPM", unit: "$", format: fmt$2 },
-  { key: "cpc", label: "CPC", unit: "$", format: fmt$2 },
-  { key: "hook_rate", label: "Hook rate", unit: "%", format: fmtPct1 },
-  { key: "hold_rate", label: "Hold rate", unit: "%", format: fmtPct1 },
-  { key: "atc_rate", label: "ATC rate", unit: "%", format: fmtPct1 },
-  { key: "purchases", label: "Purchases", unit: "#", format: fmtNum },
-  { key: "impressions", label: "Impressions", unit: "#", format: fmtNum },
-  { key: "reach", label: "Reach", unit: "#", format: fmtNum },
-  { key: "link_clicks", label: "Link clicks", unit: "#", format: fmtNum },
+  { key: "cpa", label: "CPA", unit: "$", higherIsBetter: false, format: fmt$ },
+  { key: "ctr", label: "CTR", unit: "%", higherIsBetter: true, format: fmtPct },
+  { key: "cpm", label: "CPM", unit: "$", higherIsBetter: false, format: fmt$2 },
+  { key: "cpc", label: "CPC", unit: "$", higherIsBetter: false, format: fmt$2 },
+  {
+    key: "hook_rate",
+    label: "Hook rate",
+    unit: "%",
+    higherIsBetter: true,
+    format: fmtPct1,
+  },
+  {
+    key: "hold_rate",
+    label: "Hold rate",
+    unit: "%",
+    higherIsBetter: true,
+    format: fmtPct1,
+  },
+  {
+    key: "atc_rate",
+    label: "ATC rate",
+    unit: "%",
+    higherIsBetter: true,
+    format: fmtPct1,
+  },
+  {
+    key: "purchases",
+    label: "Purchases",
+    unit: "#",
+    higherIsBetter: true,
+    format: fmtNum,
+  },
+  {
+    key: "impressions",
+    label: "Impressions",
+    unit: "#",
+    higherIsBetter: true,
+    format: fmtNum,
+  },
+  {
+    key: "reach",
+    label: "Reach",
+    unit: "#",
+    higherIsBetter: true,
+    format: fmtNum,
+  },
+  {
+    key: "link_clicks",
+    label: "Link clicks",
+    unit: "#",
+    higherIsBetter: true,
+    format: fmtNum,
+  },
   {
     key: "frequency",
     label: "Frequency",
     unit: "#",
+    higherIsBetter: false,
     format: (v) => {
       const x = n(v);
       return x == null ? "—" : x.toFixed(2);
@@ -86,6 +141,7 @@ export const METRIC_DEFS: MetricDef[] = [
     key: "launched_at",
     label: "Launched",
     unit: "date",
+    higherIsBetter: false,
     format: (v) => {
       if (v == null || v === "") return "—";
       return formatDistanceToNow(new Date(v as string), { addSuffix: true });

@@ -4,7 +4,7 @@ import { FiltersReset } from "./ui/filters-reset";
 
 export default function ExploreAdsPage() {
   return (
-    <div className="flex flex-col flex-1">
+    <div className="flex flex-col flex-1 min-h-0 overflow-y-auto">
       <div className="border-b border-border px-6 py-5">
         <h1 className="text-xl font-semibold tracking-tight">Explore Ads</h1>
         <p className="text-sm text-muted-foreground mt-0.5">

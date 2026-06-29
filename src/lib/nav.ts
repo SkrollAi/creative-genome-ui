@@ -1,4 +1,4 @@
-import { LayoutGrid, Tag } from "lucide-react";
+import { LayoutGrid, Tag, Grid2x2 } from "lucide-react";
 
 export type NavItem = {
   title: string;
@@ -16,5 +16,10 @@ export const navItems: NavItem[] = [
     title: "Tagging",
     href: "/tagging",
     icon: Tag,
+  },
+  {
+    title: "Matrix",
+    href: "/matrix",
+    icon: Grid2x2,
   },
 ];

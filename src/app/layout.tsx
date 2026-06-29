@@ -23,12 +23,12 @@ export default function RootLayout({
       lang="en"
       className={cn("h-full antialiased font-sans", geist.variable)}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="h-full flex flex-col overflow-hidden">
         <Providers>
           {" "}
-          <SidebarProvider>
+          <SidebarProvider className="h-full">
             <AppSidebar />
-            <SidebarInset className="flex flex-col min-h-screen">
+            <SidebarInset className="flex flex-col h-screen min-w-0 overflow-hidden">
               {children}
             </SidebarInset>
           </SidebarProvider>
