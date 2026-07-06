@@ -42,6 +42,9 @@ export function useAds() {
         date_to: filters.date_to,
         page: filters.page,
         limit: filters.limit,
+        ...(filters.metric_filters?.length && {
+          metric_filters: filters.metric_filters,
+        }),
       });
       return res.data.data;
     },
@@ -70,6 +73,9 @@ export function useForceRefreshAds() {
       page: filters.page,
       limit: filters.limit,
       force: true,
+      ...(filters.metric_filters?.length && {
+        metric_filters: filters.metric_filters,
+      }),
     });
     qc.invalidateQueries({ queryKey: ["ads", selected?.account_id] });
   };

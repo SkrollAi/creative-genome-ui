@@ -48,6 +48,7 @@ export function SaveReportDialog({ open, onClose }: Props) {
           limit: filters.limit,
           date_from: filters.date_from,
           date_to: filters.date_to,
+          metric_filters: filters.metric_filters ?? [],
         },
       });
       qc.invalidateQueries({ queryKey: ["reports", selected?.account_id] });

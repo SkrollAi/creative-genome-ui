@@ -58,6 +58,9 @@ export function useTaggingCreatives() {
           adset_name: report.filters.adset_name,
         }),
         ...(report?.filters.ad_name && { ad_name: report.filters.ad_name }),
+        ...(report?.filters.metric_filters?.length && {
+          metric_filters: report.filters.metric_filters,
+        }),
         page: filters.page,
         limit: 10,
         creative_type: filters.creative_type,

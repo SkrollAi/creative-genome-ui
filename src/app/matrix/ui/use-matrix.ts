@@ -113,6 +113,9 @@ export function useMatrixData() {
         }),
         ...(r.filters.adset_name && { adset_name: r.filters.adset_name }),
         ...(r.filters.ad_name && { ad_name: r.filters.ad_name }),
+        ...(r.filters.metric_filters?.length && {
+          metric_filters: r.filters.metric_filters,
+        }),
       });
       return res.data.data.creatives as MatrixCreative[];
     },

@@ -43,6 +43,8 @@ function defaultDates() {
   return daysToAbsolute(7);
 }
 
+export type MetricFilter = { metric: string; operator: string; value: number };
+
 export type AdsFilters = {
   ad_name: string;
   adset_name: string;
@@ -55,6 +57,7 @@ export type AdsFilters = {
   date_to: string;
   page: number;
   limit: number;
+  metric_filters: MetricFilter[];
 };
 
 export function getDefaultFilters(): AdsFilters {
@@ -69,6 +72,7 @@ export function getDefaultFilters(): AdsFilters {
     ...defaultDates(),
     page: 1,
     limit: 20,
+    metric_filters: [],
   };
 }
 

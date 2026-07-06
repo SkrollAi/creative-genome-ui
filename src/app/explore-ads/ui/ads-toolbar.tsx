@@ -19,6 +19,7 @@ import {
 } from "./use-ads-filters";
 import { useAds } from "./use-ads";
 import { MetricsSelector } from "./metrics-selector";
+import { MetricFilters } from "./metric-filters";
 import { SaveReportDialog } from "./save-report-dialog";
 import { SmartSearch } from "./smart-search";
 import { DateRangePicker } from "./date-range-picker";
@@ -121,6 +122,9 @@ export function AdsToolbar({ actions, hideSave }: Props) {
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {/* Metric threshold filters */}
+        <MetricFilters />
 
         {/* Metrics */}
         <MetricsSelector />
