@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
-import type { Report } from "@/app/reports/ui/use-reports";
+import type { Report } from "@/app/(dashboard)/reports/ui/use-reports";
 
 export function useReport(id: string) {
   return useQuery<Report>({

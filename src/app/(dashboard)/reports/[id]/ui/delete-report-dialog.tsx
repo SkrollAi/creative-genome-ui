@@ -12,8 +12,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useDeleteReport } from "@/app/reports/ui/use-reports";
-import type { Report } from "@/app/reports/ui/use-reports";
+import { useDeleteReport } from "@/app/(dashboard)/reports/ui/use-reports";
+import type { Report } from "@/app/(dashboard)/reports/ui/use-reports";
 
 type Props = {
   report: Report;

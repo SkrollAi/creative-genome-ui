@@ -25,16 +25,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useAdAccount } from "@/context/ad-account-context";
-import { useReports } from "@/app/reports/ui/use-reports";
-import type { Report } from "@/app/reports/ui/use-reports";
+import { useReports } from "@/app/(dashboard)/reports/ui/use-reports";
+import type { Report } from "@/app/(dashboard)/reports/ui/use-reports";
 import {
   getMetricDefs,
   METRIC_DEFS,
-} from "@/app/explore-ads/ui/ads-metrics-store";
+} from "@/app/(dashboard)/explore-ads/ui/ads-metrics-store";
 import { useMatrixStore, useMatrixData, useMatrixDerived } from "./use-matrix";
 import { MatrixGrid } from "./matrix-grid";
 import { MatrixSheet } from "./matrix-sheet";
-import { useTagLibrary } from "@/app/tagging/ui/use-tagging";
+import { useTagLibrary } from "@/app/(dashboard)/tagging/ui/use-tagging";
 
 const COLOR_BY_OPTIONS = METRIC_DEFS.filter((d) => d.key !== "launched_at");
 

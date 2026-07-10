@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { VideoIcon, ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Creative } from "@/app/explore-ads/ui/ads-card";
+import type { Creative } from "@/app/(dashboard)/explore-ads/ui/ads-card";
 
 type Props = {
   creative: Creative;

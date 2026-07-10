@@ -39,10 +39,10 @@ import {
 
 import { TaggingCreativeCard } from "./tagging-creative-card";
 import { TagCategorySection } from "./tag-category-section";
-import { AdsSheet } from "@/app/explore-ads/ui/ads-sheet";
-import type { Creative } from "@/app/explore-ads/ui/ads-card";
-import { useReports } from "@/app/reports/ui/use-reports";
-import type { Report } from "@/app/reports/ui/use-reports";
+import { AdsSheet } from "@/app/(dashboard)/explore-ads/ui/ads-sheet";
+import type { Creative } from "@/app/(dashboard)/explore-ads/ui/ads-card";
+import { useReports } from "@/app/(dashboard)/reports/ui/use-reports";
+import type { Report } from "@/app/(dashboard)/reports/ui/use-reports";
 
 export function TaggingContent() {
   const { selected: account } = useAdAccount();

@@ -5,8 +5,8 @@ import { create } from "zustand";
 import { useMemo } from "react";
 import api from "@/lib/api";
 import { useAdAccount } from "@/context/ad-account-context";
-import type { Report } from "@/app/reports/ui/use-reports";
-import type { MetricKey } from "@/app/explore-ads/ui/ads-metrics-store";
+import type { Report } from "@/app/(dashboard)/reports/ui/use-reports";
+import type { MetricKey } from "@/app/(dashboard)/explore-ads/ui/ads-metrics-store";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

@@ -1,0 +1,140 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { ChevronsUpDown, Building2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import api from "@/lib/api";
+import { useAdAccount, type AdAccount } from "@/context/ad-account-context";
+import {
+  getAccountStatusLabel,
+  getAccountStatusTextClass,
+} from "@/lib/ad-account-status";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
+} from "@/components/ui/sidebar";
+import { SyncAccountDialog } from "./sync-account-dialog";
+
+export function AccountSelector() {
+  const { isMobile } = useSidebar();
+  const { accounts, setAccounts, selected, setSelected } = useAdAccount();
+  const [syncAccount, setSyncAccount] = useState<AdAccount | null>(null);
+
+  const { data } = useQuery({
+    queryKey: ["ad-accounts"],
+    queryFn: async () => {
+      const res = await api.get("/creative_genome/ad-accounts/list");
+      return (res.data.accounts ?? []) as AdAccount[];
+    },
+  });
+
+  useEffect(() => {
+    if (!data) return;
+    setAccounts(data);
+  }, [data]);
+
+  function handleSelect(account: AdAccount) {
+    if (!account.is_synced) {
+      if (account.is_syncing) {
+        toast.info(`"${account.name}" is still syncing — check back soon.`);
+        return;
+      }
+      setSyncAccount(account);
+      return;
+    }
+    setSelected(account);
+  }
+
+  return (
+    <>
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <SidebarMenuButton
+                size="lg"
+                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              >
+                <div className="size-8 rounded-md bg-muted flex items-center justify-center shrink-0">
+                  <Building2 className="size-4 text-muted-foreground" />
+                </div>
+                <div className="flex flex-col min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
+                  <span className="text-xs font-medium truncate leading-tight">
+                    {selected?.name ?? "Select account"}
+                  </span>
+                  <span className="text-[11px] text-muted-foreground truncate leading-tight">
+                    {selected?.account_id ?? "No account selected"}
+                  </span>
+                </div>
+                <ChevronsUpDown className="size-4 text-muted-foreground shrink-0 group-data-[collapsible=icon]:hidden" />
+              </SidebarMenuButton>
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent
+              className="w-72 p-0"
+              side={isMobile ? "bottom" : "right"}
+              align="end"
+              sideOffset={4}
+            >
+              <DropdownMenuLabel className="text-xs text-muted-foreground px-3 pt-2.5 pb-1.5">
+                {accounts?.length ?? 0} ad account
+                {accounts?.length === 1 ? "" : "s"}
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator className="my-0" />
+              <div className="max-h-72 overflow-y-auto divide-y divide-border">
+                {(accounts ?? []).map((account) => (
+                  <DropdownMenuItem
+                    key={account.account_id}
+                    onClick={() => handleSelect(account)}
+                    className={cn(
+                      "flex flex-col items-start gap-1 rounded-none px-3 py-2.5 cursor-pointer",
+                      !account.is_synced && "opacity-70"
+                    )}
+                  >
+                    <span className="text-sm font-medium leading-tight">
+                      {account.name}
+                    </span>
+                    <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                      <span
+                        className={getAccountStatusTextClass(
+                          account.account_status
+                        )}
+                      >
+                        {getAccountStatusLabel(account.account_status)}
+                      </span>
+                      <span className="text-border">·</span>
+                      {account.is_syncing ? (
+                        <span className="text-amber-600">Syncing</span>
+                      ) : account.is_synced ? (
+                        <span className="text-emerald-600">Synced</span>
+                      ) : (
+                        <span className="text-destructive">Not synced</span>
+                      )}
+                    </div>
+                  </DropdownMenuItem>
+                ))}
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </SidebarMenuItem>
+      </SidebarMenu>
+
+      <SyncAccountDialog
+        account={syncAccount}
+        onClose={() => setSyncAccount(null)}
+      />
+    </>
+  );
+}

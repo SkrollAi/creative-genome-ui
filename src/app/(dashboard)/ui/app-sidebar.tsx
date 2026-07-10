@@ -18,8 +18,9 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { AccountSelector } from "@/app/ui/account-selector";
-import { useReports } from "@/app/reports/ui/use-reports";
+import { AccountSelector } from "@/app/(dashboard)/ui/account-selector";
+import { UserMenu } from "@/app/(dashboard)/ui/user-menu";
+import { useReports } from "@/app/(dashboard)/reports/ui/use-reports";
 
 function ReportsSection() {
   const pathname = usePathname();
@@ -89,7 +90,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border">
-      <SidebarHeader className="px-4 py-4 border-b border-border">
+      <SidebarHeader className="px-4 py-4 border-b border-border gap-3">
         <div className="flex items-center gap-3">
           <div className="size-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
             <span className="text-primary-foreground text-xs font-bold">
@@ -105,6 +106,7 @@ export function AppSidebar() {
             </span>
           </div>
         </div>
+        <AccountSelector />
       </SidebarHeader>
 
       <SidebarContent className="px-2 py-3 flex flex-col gap-4">
@@ -143,7 +145,7 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="border-t border-border px-2 py-3">
-        <AccountSelector />
+        <UserMenu />
       </SidebarFooter>
 
       <SidebarRail />

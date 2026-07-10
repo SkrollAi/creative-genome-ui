@@ -4,8 +4,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { create } from "zustand";
 import api from "@/lib/api";
 import { useAdAccount } from "@/context/ad-account-context";
-import type { Creative } from "@/app/explore-ads/ui/ads-card";
-import type { Report } from "@/app/reports/ui/use-reports";
+import type { Creative } from "@/app/(dashboard)/explore-ads/ui/ads-card";
+import type { Report } from "@/app/(dashboard)/reports/ui/use-reports";
 
 export type TaggingFilters = {
   page: number;

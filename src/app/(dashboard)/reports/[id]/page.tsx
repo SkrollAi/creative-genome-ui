@@ -1,8 +1,8 @@
 import { ReportHeader } from "./ui/report-header";
 import { ReportFilterInitializer } from "./ui/report-filter-initializer";
 import { ReportActions } from "./ui/report-actions";
-import { AdsToolbar } from "@/app/explore-ads/ui/ads-toolbar";
-import { AdsContent } from "@/app/explore-ads/ui/ads-content";
+import { AdsToolbar } from "@/app/(dashboard)/explore-ads/ui/ads-toolbar";
+import { AdsContent } from "@/app/(dashboard)/explore-ads/ui/ads-content";
 
 type Props = { params: Promise<{ id: string }> };
 

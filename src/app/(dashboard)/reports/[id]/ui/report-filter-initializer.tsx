@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import {
   useAdsFilters,
   daysToAbsolute,
-} from "@/app/explore-ads/ui/use-ads-filters";
+} from "@/app/(dashboard)/explore-ads/ui/use-ads-filters";
 import { useReport } from "./use-report";
 
 export function ReportFilterInitializer({ id }: { id: string }) {

@@ -12,7 +12,7 @@ import { getCellColor } from "./use-matrix";
 import type {
   MetricKey,
   MetricDef,
-} from "@/app/explore-ads/ui/ads-metrics-store";
+} from "@/app/(dashboard)/explore-ads/ui/ads-metrics-store";
 
 type Props = {
   data: AggregatedMetrics | null;

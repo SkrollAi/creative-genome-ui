@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import { useMatrixStore, useMatrixDerived } from "./use-matrix";
 import { MatrixCell } from "./matrix-cell";
-import { getMetricDefs } from "@/app/explore-ads/ui/ads-metrics-store";
+import { getMetricDefs } from "@/app/(dashboard)/explore-ads/ui/ads-metrics-store";
 import { useAdAccount } from "@/context/ad-account-context";
 import type { MatrixCreative } from "./use-matrix";
 

@@ -16,8 +16,8 @@ import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { useAdAccount } from "@/context/ad-account-context";
-import { useAdsFilters } from "@/app/explore-ads/ui/use-ads-filters";
-import type { Report } from "@/app/reports/ui/use-reports";
+import { useAdsFilters } from "@/app/(dashboard)/explore-ads/ui/use-ads-filters";
+import type { Report } from "@/app/(dashboard)/reports/ui/use-reports";
 
 type Props = {
   report: Report;

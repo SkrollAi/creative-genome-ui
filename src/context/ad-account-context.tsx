@@ -4,7 +4,9 @@ import { persist } from "zustand/middleware";
 export type AdAccount = {
   account_id: string;
   name: string;
+  account_status: number | null;
   is_synced: boolean;
+  is_syncing: boolean;
   currency: string;
 };
 
