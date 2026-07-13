@@ -70,6 +70,7 @@ export function SyncAccountDialog({ account, onClose }: Props) {
           We&apos;ll collect all active and paused ads for this account. This
           can take a while depending on how many ads it has — once it&apos;s
           done, you&apos;ll be able to explore, tag, and report on them here.
+          We&apos;ll only fetch creatives for pages you have access to.
         </p>
 
         <DialogFooter>

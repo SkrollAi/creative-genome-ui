@@ -78,8 +78,8 @@ export type AdEntry = {
 export type Creative = {
   creative_id: string;
   creative_type: "video" | "image";
-  url: string;
-  thumbnail_url: string;
+  url: string | null;
+  thumbnail_url: string | null;
   ad_count: number;
   tags: Record<string, string[]>;
   is_tagged: boolean;
@@ -115,7 +115,7 @@ export function AdsCard({ creative, onSelect }: Props) {
       <div className="relative aspect-3/4 bg-linear-to-br from-slate-800 to-slate-900 overflow-hidden">
         {playing && hasVideoUrl ? (
           <video
-            src={creative.url}
+            src={creative.url ?? undefined}
             className="absolute inset-0 w-full h-full object-cover"
             autoPlay
             controls

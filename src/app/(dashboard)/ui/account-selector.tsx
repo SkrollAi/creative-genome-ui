@@ -134,7 +134,7 @@ export function AccountSelector() {
                         )}
                       </div>
                     </div>
-                    {account.is_synced && !account.is_syncing && account.sync_had_errors && (
+                    {account.is_synced && !account.is_syncing && (
                       <button
                         type="button"
                         title="Resync"

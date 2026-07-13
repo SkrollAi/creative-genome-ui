@@ -13,8 +13,8 @@ import type { MetricKey } from "@/app/(dashboard)/explore-ads/ui/ads-metrics-sto
 export type MatrixCreative = {
   creative_id: string;
   creative_type: "video" | "image";
-  url: string;
-  thumbnail_url: string;
+  url: string | null;
+  thumbnail_url: string | null;
   ad_count: number;
   tags: Record<string, string[]>;
   spend: number;
