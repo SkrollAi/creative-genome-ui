@@ -65,7 +65,7 @@ export function useTaggingCreatives() {
         limit: 10,
         creative_type: filters.creative_type,
       });
-      return res.data.data as {
+      return res.data as {
         creatives: Creative[];
         pagination: {
           current_page: number;
@@ -100,7 +100,7 @@ export function useTagLibrary() {
       const res = await api.get("/creative_genome/tags/library", {
         params: { account_id: selected?.account_id },
       });
-      return res.data.data.library as TagCategory[];
+      return res.data.library as TagCategory[];
     },
     enabled: !!selected?.account_id,
   });

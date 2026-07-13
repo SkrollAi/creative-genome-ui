@@ -46,7 +46,7 @@ export function useAds() {
           metric_filters: filters.metric_filters,
         }),
       });
-      return res.data.data;
+      return res.data;
     },
     enabled: !!selected?.account_id,
     placeholderData: (prev) => prev,

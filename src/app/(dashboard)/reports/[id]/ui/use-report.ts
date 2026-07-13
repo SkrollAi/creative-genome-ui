@@ -11,7 +11,7 @@ export function useReport(id: string) {
       const res = await api.post("/creative_genome/reports/get", {
         report_id: id,
       });
-      return res.data.data;
+      return res.data.report;
     },
     enabled: !!id,
   });

@@ -36,7 +36,7 @@ export function useReports() {
       const res = await api.post("/creative_genome/reports/list", {
         account_id: selected?.account_id,
       });
-      return res.data.data ?? [];
+      return res.data.reports ?? [];
     },
     enabled: !!selected?.account_id,
   });

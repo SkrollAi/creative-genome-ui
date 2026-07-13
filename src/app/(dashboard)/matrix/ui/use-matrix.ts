@@ -117,7 +117,7 @@ export function useMatrixData() {
           metric_filters: r.filters.metric_filters,
         }),
       });
-      return res.data.data.creatives as MatrixCreative[];
+      return res.data.creatives as MatrixCreative[];
     },
     enabled: !!selected?.account_id && !!selected_report,
     staleTime: 5 * 60 * 1000,
