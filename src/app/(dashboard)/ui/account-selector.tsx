@@ -38,6 +38,8 @@ export function AccountSelector() {
       const res = await api.get("/creative_genome/ad-accounts/list");
       return (res.data.accounts ?? []) as AdAccount[];
     },
+    refetchInterval: (query) =>
+      (query.state.data ?? []).some((a) => a.is_syncing) ? 10000 : false,
   });
 
   useEffect(() => {
@@ -117,6 +119,10 @@ export function AccountSelector() {
                       <span className="text-border">·</span>
                       {account.is_syncing ? (
                         <span className="text-amber-600">Syncing</span>
+                      ) : account.is_synced && account.sync_had_errors ? (
+                        <span className="text-amber-600">
+                          Synced (with errors)
+                        </span>
                       ) : account.is_synced ? (
                         <span className="text-emerald-600">Synced</span>
                       ) : (

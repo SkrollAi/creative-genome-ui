@@ -7,6 +7,7 @@ export type AdAccount = {
   account_status: number | null;
   is_synced: boolean;
   is_syncing: boolean;
+  sync_had_errors: boolean;
   currency: string;
 };
 
