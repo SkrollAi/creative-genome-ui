@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ChevronsUpDown, Building2 } from "lucide-react";
+import { ChevronsUpDown, Building2, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import api from "@/lib/api";
 import { useAdAccount, type AdAccount } from "@/context/ad-account-context";
@@ -101,34 +101,49 @@ export function AccountSelector() {
                     key={account.account_id}
                     onClick={() => handleSelect(account)}
                     className={cn(
-                      "flex flex-col items-start gap-1 rounded-none px-3 py-2.5 cursor-pointer",
+                      "flex items-start gap-1 rounded-none px-3 py-2.5 cursor-pointer",
                       !account.is_synced && "opacity-70"
                     )}
                   >
-                    <span className="text-sm font-medium leading-tight">
-                      {account.name}
-                    </span>
-                    <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                      <span
-                        className={getAccountStatusTextClass(
-                          account.account_status
-                        )}
-                      >
-                        {getAccountStatusLabel(account.account_status)}
+                    <div className="flex flex-col items-start gap-1 min-w-0 flex-1">
+                      <span className="text-sm font-medium leading-tight">
+                        {account.name}
                       </span>
-                      <span className="text-border">·</span>
-                      {account.is_syncing ? (
-                        <span className="text-amber-600">Syncing</span>
-                      ) : account.is_synced && account.sync_had_errors ? (
-                        <span className="text-amber-600">
-                          Synced (with errors)
+                      <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                        <span
+                          className={getAccountStatusTextClass(
+                            account.account_status
+                          )}
+                        >
+                          {getAccountStatusLabel(account.account_status)}
                         </span>
-                      ) : account.is_synced ? (
-                        <span className="text-emerald-600">Synced</span>
-                      ) : (
-                        <span className="text-destructive">Not synced</span>
-                      )}
+                        <span className="text-border">·</span>
+                        {account.is_syncing ? (
+                          <span className="text-amber-600">Syncing</span>
+                        ) : account.is_synced && account.sync_had_errors ? (
+                          <span className="text-amber-600">
+                            Synced (with errors)
+                          </span>
+                        ) : account.is_synced ? (
+                          <span className="text-emerald-600">Synced</span>
+                        ) : (
+                          <span className="text-destructive">Not synced</span>
+                        )}
+                      </div>
                     </div>
+                    {account.is_synced && !account.is_syncing && account.sync_had_errors && (
+                      <button
+                        type="button"
+                        title="Resync"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSyncAccount(account);
+                        }}
+                        className="shrink-0 p-1 rounded-sm text-muted-foreground hover:text-foreground hover:bg-muted"
+                      >
+                        <RefreshCw className="size-3.5" />
+                      </button>
+                    )}
                   </DropdownMenuItem>
                 ))}
               </div>
