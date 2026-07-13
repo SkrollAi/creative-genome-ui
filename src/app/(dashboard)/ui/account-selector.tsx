@@ -45,6 +45,9 @@ export function AccountSelector() {
   useEffect(() => {
     if (!data) return;
     setAccounts(data);
+    if (selected && !data.some((a) => a.account_id === selected.account_id)) {
+      setSelected(null);
+    }
   }, [data]);
 
   function handleSelect(account: AdAccount) {

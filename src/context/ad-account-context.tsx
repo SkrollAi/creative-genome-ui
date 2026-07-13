@@ -15,7 +15,7 @@ type AdAccountStore = {
   accounts: AdAccount[];
   selected: AdAccount | null;
   setAccounts: (accounts: AdAccount[]) => void;
-  setSelected: (account: AdAccount) => void;
+  setSelected: (account: AdAccount | null) => void;
 };
 
 export const useAdAccount = create<AdAccountStore>()(
