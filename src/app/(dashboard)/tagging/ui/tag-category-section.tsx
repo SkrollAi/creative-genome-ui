@@ -23,7 +23,7 @@ export function TagCategorySection({
   const [inputVal, setInputVal] = useState("");
   const [showInput, setShowInput] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const allTags = [...category.custom_tags, ...category.defaults];
+  const allTags = [...category?.customTags, ...category.defaults];
   const dotColor = CATEGORY_COLORS[colorIndex % CATEGORY_COLORS.length];
 
   useEffect(() => {

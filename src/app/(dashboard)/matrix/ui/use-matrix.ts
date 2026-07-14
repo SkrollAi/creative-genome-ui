@@ -245,7 +245,7 @@ export function getCellColor(
 
 export function useMatrixDerived(
   creatives: MatrixCreative[],
-  library?: { key: string; defaults: string[]; custom_tags: string[] }[]
+  library?: { key: string; defaults: string[]; customTags: string[] }[]
 ) {
   const { row_category, col_category } = useMatrixStore();
 
@@ -259,11 +259,11 @@ export function useMatrixDerived(
     const libCol = library?.find((c) => c.key === col_category);
 
     const rowTags = libRow
-      ? [...libRow.custom_tags, ...libRow.defaults]
+      ? [...libRow?.customTags, ...libRow.defaults]
       : [...new Set(creatives.flatMap((c) => c.tags?.[row_category] ?? []))];
 
     const colTags = libCol
-      ? [...libCol.custom_tags, ...libCol.defaults]
+      ? [...libCol?.customTags, ...libCol.defaults]
       : [...new Set(creatives.flatMap((c) => c.tags?.[col_category] ?? []))];
 
     const cellMap = buildCellMap(creatives, row_category, col_category);

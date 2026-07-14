@@ -43,6 +43,8 @@ export function useAds(reportId?: string) {
           order: filters.order,
           date_from: filters.date_from,
           date_to: filters.date_to,
+          launched_at_from: filters.launched_at_from,
+          launched_at_to: filters.launched_at_to,
           page: filters.page,
           limit: filters.limit,
           ...(filters.metric_filters?.length && {
@@ -65,6 +67,9 @@ export function useAds(reportId?: string) {
         launched_at_to: filters.launched_at_to,
         page: filters.page,
         limit: filters.limit,
+        ...(filters.metric_filters?.length && {
+          metric_filters: filters.metric_filters,
+        }),
       });
       return res.data;
     },
@@ -73,44 +78,38 @@ export function useAds(reportId?: string) {
   });
 }
 
-export function useForceRefreshAds(reportId?: string) {
+// Report view only — explore-ads is DB-only/cron-fed and has no manual
+// refresh of its own.
+export function useForceRefreshAds(reportId: string) {
   const { selected } = useAdAccount();
   const { filters } = useAdsFiltersStore();
   const qc = useQueryClient();
 
   return async () => {
-    if (reportId) {
-      const res = await api.post("/creative_genome/reports/creatives", {
-        account_id: selected?.account_id,
-        report_id: reportId,
-        ad_name: filters.ad_name,
-        adset_name: filters.adset_name,
-        campaign_name: filters.campaign_name,
-        creative_type: filters.type,
-        status: filters.status,
-        sort: filters.sort,
-        order: filters.order,
-        date_from: filters.date_from,
-        date_to: filters.date_to,
-        page: filters.page,
-        limit: filters.limit,
-        force: true,
-        ...(filters.metric_filters?.length && {
-          metric_filters: filters.metric_filters,
-        }),
-      });
-      qc.setQueryData(
-        ["ads", selected?.account_id, reportId, filters],
-        res.data
-      );
-      return;
-    }
-
-    await api.post("/creative_genome/explore-ads/sync-metrics", {
+    const res = await api.post("/creative_genome/reports/creatives", {
       account_id: selected?.account_id,
+      report_id: reportId,
+      ad_name: filters.ad_name,
+      adset_name: filters.adset_name,
+      campaign_name: filters.campaign_name,
+      creative_type: filters.type,
+      status: filters.status,
+      sort: filters.sort,
+      order: filters.order,
+      date_from: filters.date_from,
+      date_to: filters.date_to,
+      launched_at_from: filters.launched_at_from,
+      launched_at_to: filters.launched_at_to,
+      page: filters.page,
+      limit: filters.limit,
+      force: true,
+      ...(filters.metric_filters?.length && {
+        metric_filters: filters.metric_filters,
+      }),
     });
-    qc.invalidateQueries({
-      queryKey: ["ads", selected?.account_id, undefined],
-    });
+    qc.setQueryData(
+      ["ads", selected?.account_id, reportId, filters],
+      res.data
+    );
   };
 }

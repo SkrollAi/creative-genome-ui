@@ -21,6 +21,8 @@ export type Report = {
     limit?: number;
     date_from?: string;
     date_to?: string;
+    launched_at_from?: string;
+    launched_at_to?: string;
     metric_filters?: { metric: string; operator: string; value: number }[];
   };
   last_rerun_at: string | null;
@@ -52,6 +54,7 @@ export function useDeleteReport() {
       qc.invalidateQueries({ queryKey: ["reports", selected?.account_id] });
       toast.success("Report deleted");
     },
-    onError: () => toast.error("Failed to delete report"),
+    onError: (err) =>
+      toast.error(err instanceof Error ? err.message : "Failed to delete report"),
   });
 }

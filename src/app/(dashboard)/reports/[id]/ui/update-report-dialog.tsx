@@ -54,6 +54,8 @@ export function UpdateReportDialog({ report, open, onClose }: Props) {
           limit: filters.limit,
           date_from: filters.date_from,
           date_to: filters.date_to,
+          launched_at_from: filters.launched_at_from,
+          launched_at_to: filters.launched_at_to,
           metric_filters: filters.metric_filters ?? [],
         },
       });
@@ -61,8 +63,8 @@ export function UpdateReportDialog({ report, open, onClose }: Props) {
       qc.invalidateQueries({ queryKey: ["reports", selected?.account_id] });
       toast.success("Report updated");
       onClose();
-    } catch {
-      toast.error("Failed to update report");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update report");
     } finally {
       setSaving(false);
     }

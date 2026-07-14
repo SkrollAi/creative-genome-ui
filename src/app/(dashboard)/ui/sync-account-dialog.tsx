@@ -29,14 +29,9 @@ export function SyncAccountDialog({ account, onClose }: Props) {
     if (!account) return;
     setSyncing(true);
     try {
-      const { data } = await api.post("/creative_genome/ad-accounts/sync", {
+      await api.post("/creative_genome/ad-accounts/sync", {
         account_id: account.account_id,
       });
-      if (!data.success) {
-        toast.error(data.error ?? "Sync is already in process");
-        onClose();
-        return;
-      }
       setAccounts(
         accounts.map((a) =>
           a.account_id === account.account_id
@@ -46,8 +41,9 @@ export function SyncAccountDialog({ account, onClose }: Props) {
       );
       toast.success("Sync started — this can take a while, check back soon");
       onClose();
-    } catch {
-      toast.error("Failed to start sync");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to start sync");
+      onClose();
     } finally {
       setSyncing(false);
     }

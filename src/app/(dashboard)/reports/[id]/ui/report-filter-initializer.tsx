@@ -34,6 +34,8 @@ export function ReportFilterInitializer({ id }: { id: string }) {
       order: f.order ?? "desc",
       date_from,
       date_to,
+      launched_at_from: f.launched_at_from ?? "",
+      launched_at_to: f.launched_at_to ?? "",
       metric_filters: f.metric_filters ?? [],
       page: 1,
     });

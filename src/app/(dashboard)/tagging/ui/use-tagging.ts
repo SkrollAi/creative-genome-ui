@@ -59,6 +59,12 @@ export function useTaggingCreatives() {
           adset_name: report.filters.adset_name,
         }),
         ...(report?.filters.ad_name && { ad_name: report.filters.ad_name }),
+        ...(report?.filters.launched_at_from && {
+          launched_at_from: report.filters.launched_at_from,
+        }),
+        ...(report?.filters.launched_at_to && {
+          launched_at_to: report.filters.launched_at_to,
+        }),
         ...(report?.filters.metric_filters?.length && {
           metric_filters: report.filters.metric_filters,
         }),
@@ -89,7 +95,7 @@ export type TagCategory = {
   label: string;
   description: string;
   defaults: string[];
-  custom_tags: string[];
+  customTags: string[];
 };
 
 export function useTagLibrary() {
@@ -118,8 +124,9 @@ export function useSaveTags() {
       creative_id: string;
       tags: Record<string, string[]>;
     }) => {
-      const res = await api.post("/creative_genome/tags/save", payload, {
-        params: { account_id: selected?.account_id },
+      const res = await api.post("/creative_genome/tags/save", {
+        ...payload,
+        account_id: selected?.account_id,
       });
       return res.data;
     },
@@ -129,6 +136,7 @@ export function useSaveTags() {
       });
       qc.invalidateQueries({ queryKey: ["ads", selected?.account_id] });
       qc.invalidateQueries({ queryKey: ["tag-library", selected?.account_id] });
+      qc.invalidateQueries({ queryKey: ["matrix", selected?.account_id] });
     },
   });
 }

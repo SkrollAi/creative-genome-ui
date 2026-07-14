@@ -16,7 +16,7 @@ export function LaunchedAtFilter() {
   const active = !!filters.launched_at_from || !!filters.launched_at_to;
   const label = active
     ? `${filters.launched_at_from || "…"} – ${filters.launched_at_to || "…"}`
-    : "Launched at";
+    : "Launched on";
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
@@ -61,7 +61,7 @@ export function LaunchedAtFilter() {
       {open && (
         <div className="absolute right-0 top-full mt-1.5 z-50 w-64 rounded-xl border border-border bg-popover shadow-md p-3 flex flex-col gap-2">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-1 pb-0.5">
-            Launched at
+            Launched on
           </p>
           <div className="flex items-center gap-2 px-1">
             <span className="text-xs text-muted-foreground w-8">From</span>

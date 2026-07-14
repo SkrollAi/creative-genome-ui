@@ -139,7 +139,7 @@ export const METRIC_DEFS: MetricDef[] = [
   },
   {
     key: "launched_at",
-    label: "Launched",
+    label: "Launched on",
     unit: "date",
     higherIsBetter: false,
     format: (v) => {

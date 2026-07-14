@@ -22,4 +22,16 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Backend always returns HTTP 200 with {success, error} — reject here so
+// every caller's normal catch/onError path gets the real backend message
+// instead of having to check response.data.success manually everywhere.
+api.interceptors.response.use((response) => {
+  if (response.data && response.data.success === false) {
+    return Promise.reject(
+      new Error(response.data.error || response.data.message || "Request failed")
+    );
+  }
+  return response;
+});
+
 export default api;

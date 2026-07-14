@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ChevronsUpDown, Building2, RefreshCw, Gauge } from "lucide-react";
+import { ChevronsUpDown, Building2, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import api from "@/lib/api";
 import { useAdAccount, type AdAccount } from "@/context/ad-account-context";
@@ -60,22 +60,6 @@ export function AccountSelector() {
       return;
     }
     setSelected(account);
-  }
-
-  async function handleSyncMetrics(account: AdAccount) {
-    try {
-      const { data } = await api.post(
-        "/creative_genome/explore-ads/sync-metrics",
-        { account_id: account.account_id }
-      );
-      if (!data.success) {
-        toast.error(data.error ?? "Failed to start metrics sync");
-        return;
-      }
-      toast.success(`Syncing explore-ads metrics for "${account.name}"…`);
-    } catch {
-      toast.error("Failed to start metrics sync");
-    }
   }
 
   return (
@@ -151,30 +135,17 @@ export function AccountSelector() {
                       </div>
                     </div>
                     {account.is_synced && !account.is_syncing && (
-                      <div className="shrink-0 flex items-center gap-0.5">
-                        <button
-                          type="button"
-                          title="Sync explore-ads metrics"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleSyncMetrics(account);
-                          }}
-                          className="p-1 rounded-sm text-muted-foreground hover:text-foreground hover:bg-muted"
-                        >
-                          <Gauge className="size-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          title="Resync"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSyncAccount(account);
-                          }}
-                          className="p-1 rounded-sm text-muted-foreground hover:text-foreground hover:bg-muted"
-                        >
-                          <RefreshCw className="size-3.5" />
-                        </button>
-                      </div>
+                      <button
+                        type="button"
+                        title="Resync"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSyncAccount(account);
+                        }}
+                        className="shrink-0 p-1 rounded-sm text-muted-foreground hover:text-foreground hover:bg-muted"
+                      >
+                        <RefreshCw className="size-3.5" />
+                      </button>
                     )}
                   </DropdownMenuItem>
                 ))}

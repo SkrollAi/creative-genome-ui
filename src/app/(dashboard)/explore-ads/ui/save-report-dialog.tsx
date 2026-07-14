@@ -57,8 +57,8 @@ export function SaveReportDialog({ open, onClose }: Props) {
       toast.success(`Report "${name.trim()}" saved`);
       setName("");
       onClose();
-    } catch {
-      toast.error("Failed to save report");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to save report");
     } finally {
       setSaving(false);
     }

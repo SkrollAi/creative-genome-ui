@@ -27,6 +27,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useAdAccount } from "@/context/ad-account-context";
 import { currencySymbol } from "@/lib/currency";
@@ -92,6 +93,9 @@ export function TaggingContent() {
         onSuccess: () => {
           setSaved(true);
           setTimeout(() => setSaved(false), 2000);
+        },
+        onError: (err) => {
+          toast.error(err instanceof Error ? err.message : "Failed to save tags");
         },
       }
     );

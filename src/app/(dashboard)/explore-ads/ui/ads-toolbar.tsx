@@ -47,7 +47,8 @@ export function AdsToolbar({ actions, hideSave, reportId }: Props) {
       {/* Row 1 — smart search + injected actions + save */}
       <div className="flex items-start gap-2">
         <SmartSearch />
-        {reportId ? <DateRangePicker /> : <LaunchedAtFilter />}
+        {reportId && <DateRangePicker />}
+        <LaunchedAtFilter />
         {actions}
         {!hideSave && (
           <Button
@@ -129,7 +130,7 @@ export function AdsToolbar({ actions, hideSave, reportId }: Props) {
         </DropdownMenu>
 
         {/* Metric threshold filters */}
-        {reportId && <MetricFilters />}
+        <MetricFilters />
 
         {/* Metrics */}
         <MetricsSelector />
@@ -142,7 +143,18 @@ export function AdsToolbar({ actions, hideSave, reportId }: Props) {
             </span>
           )}
           <div className="w-px h-3.5 bg-border" />
-          <MetricsFreshness reportId={reportId} />
+          {reportId ? (
+            <MetricsFreshness reportId={reportId} />
+          ) : (
+            data?.window_days && (
+              <span
+                className="text-xs text-muted-foreground whitespace-nowrap cursor-help"
+                title={`Showing performance from the last ${data.window_days} days. Need a different date range? Save this view as a report to pick your own dates.`}
+              >
+                Last {data.window_days} days
+              </span>
+            )
+          )}
         </div>
       </div>
     </div>

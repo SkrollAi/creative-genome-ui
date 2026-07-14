@@ -9,7 +9,7 @@ import type { MatrixCreative } from "./use-matrix";
 
 type Props = {
   creatives: MatrixCreative[];
-  library?: { key: string; defaults: string[]; custom_tags: string[] }[];
+  library?: { key: string; defaults: string[]; customTags: string[] }[];
 };
 
 export function MatrixGrid({ creatives, library }: Props) {
