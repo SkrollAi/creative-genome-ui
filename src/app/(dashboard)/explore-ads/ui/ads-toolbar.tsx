@@ -23,14 +23,19 @@ import { MetricFilters } from "./metric-filters";
 import { SaveReportDialog } from "./save-report-dialog";
 import { SmartSearch } from "./smart-search";
 import { DateRangePicker } from "./date-range-picker";
+import { LaunchedAtFilter } from "./launched-at-filter";
 import { MetricsFreshness } from "./metrics-freshness";
 import { useAdAccount } from "@/context/ad-account-context";
 
-type Props = { actions?: React.ReactNode; hideSave?: boolean };
+type Props = {
+  actions?: React.ReactNode;
+  hideSave?: boolean;
+  reportId?: string;
+};
 
-export function AdsToolbar({ actions, hideSave }: Props) {
+export function AdsToolbar({ actions, hideSave, reportId }: Props) {
   const { filters, setFilters } = useAdsFilters();
-  const { data, isFetching } = useAds();
+  const { data, isFetching } = useAds(reportId);
   const { selected } = useAdAccount();
   const pagination = data?.pagination;
   const [saveOpen, setSaveOpen] = useState(false);
@@ -42,7 +47,7 @@ export function AdsToolbar({ actions, hideSave }: Props) {
       {/* Row 1 — smart search + injected actions + save */}
       <div className="flex items-start gap-2">
         <SmartSearch />
-        <DateRangePicker />
+        {reportId ? <DateRangePicker /> : <LaunchedAtFilter />}
         {actions}
         {!hideSave && (
           <Button
@@ -124,7 +129,7 @@ export function AdsToolbar({ actions, hideSave }: Props) {
         </DropdownMenu>
 
         {/* Metric threshold filters */}
-        <MetricFilters />
+        {reportId && <MetricFilters />}
 
         {/* Metrics */}
         <MetricsSelector />
@@ -137,7 +142,7 @@ export function AdsToolbar({ actions, hideSave }: Props) {
             </span>
           )}
           <div className="w-px h-3.5 bg-border" />
-          <MetricsFreshness />
+          <MetricsFreshness reportId={reportId} />
         </div>
       </div>
     </div>

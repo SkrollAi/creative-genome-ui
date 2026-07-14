@@ -55,6 +55,8 @@ export type AdsFilters = {
   order: string;
   date_from: string;
   date_to: string;
+  launched_at_from: string;
+  launched_at_to: string;
   page: number;
   limit: number;
   metric_filters: MetricFilter[];
@@ -70,6 +72,8 @@ export function getDefaultFilters(): AdsFilters {
     sort: "spend",
     order: "desc",
     ...defaultDates(),
+    launched_at_from: "",
+    launched_at_to: "",
     page: 1,
     limit: 20,
     metric_filters: [],

@@ -11,9 +11,9 @@ import { AdsSheet } from "./ads-sheet";
 import { AdsLoader } from "./ads-loader";
 import type { Creative } from "./ads-card";
 
-export function AdsContent() {
+export function AdsContent({ reportId }: { reportId?: string }) {
   const { selected } = useAdAccount();
-  const { data, isLoading, isError, isFetching } = useAds();
+  const { data, isLoading, isError, isFetching } = useAds(reportId);
   const { filters, setFilters } = useAdsFilters();
   const pagination = data?.pagination;
   const [sheetAd, setSheetAd] = useState<Creative | null>(null);

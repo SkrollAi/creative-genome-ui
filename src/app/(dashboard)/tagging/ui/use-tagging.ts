@@ -42,8 +42,9 @@ export function useTaggingCreatives() {
   return useQuery({
     queryKey: ["tagging-creatives", selected?.account_id, filters],
     queryFn: async () => {
-      const res = await api.post("/creative_genome/ads/list", {
+      const res = await api.post("/creative_genome/reports/creatives", {
         account_id: selected?.account_id,
+        report_id: report?.id,
         date_from: report?.filters.date_from,
         date_to: report?.filters.date_to,
         sort: "is_tagged",

@@ -83,7 +83,6 @@ export type Creative = {
   ad_count: number;
   tags: Record<string, string[]>;
   is_tagged: boolean;
-  tagged_at: string | null;
   metrics: AdMetrics | null;
   ads: AdEntry[];
 };

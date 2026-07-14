@@ -12,16 +12,17 @@ function timeAgoLabel(isoString: string): string {
   return `${Math.floor(diff / 3600)}h ago`;
 }
 
-export function MetricsFreshness() {
-  const { data, isFetching } = useAds();
-  const forceRefresh = useForceRefreshAds();
+export function MetricsFreshness({ reportId }: { reportId?: string }) {
+  const { data, isFetching } = useAds(reportId);
+  const forceRefresh = useForceRefreshAds(reportId);
   const [refreshing, setRefreshing] = useState(false);
 
   if (!data?.fetched_at) return null;
 
-  const staleAt =
-    new Date(data.fetched_at).getTime() + data.ttl_minutes * 60 * 1000;
-  const isStale = Date.now() > staleAt;
+  const isStale =
+    !!data.ttl_minutes &&
+    Date.now() >
+      new Date(data.fetched_at).getTime() + data.ttl_minutes * 60 * 1000;
 
   async function handleRefresh() {
     setRefreshing(true);
@@ -41,7 +42,9 @@ export function MetricsFreshness() {
         onClick={handleRefresh}
         disabled={refreshing || isFetching}
         className="p-1 rounded hover:bg-muted transition-colors disabled:opacity-40"
-        title="Force refresh from Meta"
+        title={
+          reportId ? "Force refresh from Meta" : "Trigger a metrics resync"
+        }
       >
         <RefreshCw
           className={cn("size-3", (refreshing || isFetching) && "animate-spin")}
