@@ -7,6 +7,7 @@ import api from "@/lib/api";
 import { useAdAccount } from "@/context/ad-account-context";
 import type { Report } from "@/app/(dashboard)/reports/ui/use-reports";
 import type { MetricKey } from "@/app/(dashboard)/explore-ads/ui/ads-metrics-store";
+import { toBackendMetricField } from "@/app/(dashboard)/explore-ads/ui/ads-metrics-store";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -102,19 +103,32 @@ export function useMatrixData() {
     queryFn: async () => {
       const r = selected_report!;
       const res = await api.post("/creative_genome/matrix", {
-        account_id: selected?.account_id,
+        report_id: r.id,
         date_from: r.filters.date_from,
         date_to: r.filters.date_to,
         ...(r.filters.status &&
           r.filters.status !== "all" && { status: r.filters.status }),
+        ...(r.filters.creative_type &&
+          r.filters.creative_type !== "all" && {
+            creative_type: r.filters.creative_type,
+          }),
         ...(r.filters.search && { search: r.filters.search }),
         ...(r.filters.campaign_name && {
           campaign_name: r.filters.campaign_name,
         }),
         ...(r.filters.adset_name && { adset_name: r.filters.adset_name }),
         ...(r.filters.ad_name && { ad_name: r.filters.ad_name }),
+        ...(r.filters.launched_at_from && {
+          launched_at_from: r.filters.launched_at_from,
+        }),
+        ...(r.filters.launched_at_to && {
+          launched_at_to: r.filters.launched_at_to,
+        }),
         ...(r.filters.metric_filters?.length && {
-          metric_filters: r.filters.metric_filters,
+          metric_filters: r.filters.metric_filters.map((f) => ({
+            ...f,
+            metric: toBackendMetricField(f.metric),
+          })),
         }),
       });
       return res.data.creatives as MatrixCreative[];

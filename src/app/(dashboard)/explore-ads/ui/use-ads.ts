@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { useAdAccount } from "@/context/ad-account-context";
 import { useAdsFiltersStore } from "./use-ads-filters";
+import { toBackendMetricField } from "./ads-metrics-store";
 import type { Creative } from "./ads-card";
 
 type Pagination = {
@@ -32,14 +33,13 @@ export function useAds(reportId?: string) {
     queryFn: async (): Promise<AdsResponse> => {
       if (reportId) {
         const res = await api.post("/creative_genome/reports/creatives", {
-          account_id: selected?.account_id,
           report_id: reportId,
           ad_name: filters.ad_name,
           adset_name: filters.adset_name,
           campaign_name: filters.campaign_name,
           creative_type: filters.type,
           status: filters.status,
-          sort: filters.sort,
+          sort: toBackendMetricField(filters.sort),
           order: filters.order,
           date_from: filters.date_from,
           date_to: filters.date_to,
@@ -48,7 +48,10 @@ export function useAds(reportId?: string) {
           page: filters.page,
           limit: filters.limit,
           ...(filters.metric_filters?.length && {
-            metric_filters: filters.metric_filters,
+            metric_filters: filters.metric_filters.map((f) => ({
+              ...f,
+              metric: toBackendMetricField(f.metric),
+            })),
           }),
         });
         return res.data;
@@ -61,14 +64,17 @@ export function useAds(reportId?: string) {
         campaign_name: filters.campaign_name,
         creative_type: filters.type,
         status: filters.status,
-        sort: filters.sort,
+        sort: toBackendMetricField(filters.sort),
         order: filters.order,
         launched_at_from: filters.launched_at_from,
         launched_at_to: filters.launched_at_to,
         page: filters.page,
         limit: filters.limit,
         ...(filters.metric_filters?.length && {
-          metric_filters: filters.metric_filters,
+          metric_filters: filters.metric_filters.map((f) => ({
+            ...f,
+            metric: toBackendMetricField(f.metric),
+          })),
         }),
       });
       return res.data;
@@ -87,14 +93,13 @@ export function useForceRefreshAds(reportId: string) {
 
   return async () => {
     const res = await api.post("/creative_genome/reports/creatives", {
-      account_id: selected?.account_id,
       report_id: reportId,
       ad_name: filters.ad_name,
       adset_name: filters.adset_name,
       campaign_name: filters.campaign_name,
       creative_type: filters.type,
       status: filters.status,
-      sort: filters.sort,
+      sort: toBackendMetricField(filters.sort),
       order: filters.order,
       date_from: filters.date_from,
       date_to: filters.date_to,
@@ -104,7 +109,10 @@ export function useForceRefreshAds(reportId: string) {
       limit: filters.limit,
       force: true,
       ...(filters.metric_filters?.length && {
-        metric_filters: filters.metric_filters,
+        metric_filters: filters.metric_filters.map((f) => ({
+          ...f,
+          metric: toBackendMetricField(f.metric),
+        })),
       }),
     });
     qc.setQueryData(

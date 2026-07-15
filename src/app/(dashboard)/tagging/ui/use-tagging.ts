@@ -6,6 +6,7 @@ import api from "@/lib/api";
 import { useAdAccount } from "@/context/ad-account-context";
 import type { Creative } from "@/app/(dashboard)/explore-ads/ui/ads-card";
 import type { Report } from "@/app/(dashboard)/reports/ui/use-reports";
+import { toBackendMetricField } from "@/app/(dashboard)/explore-ads/ui/ads-metrics-store";
 
 export type TaggingFilters = {
   page: number;
@@ -43,7 +44,6 @@ export function useTaggingCreatives() {
     queryKey: ["tagging-creatives", selected?.account_id, filters],
     queryFn: async () => {
       const res = await api.post("/creative_genome/reports/creatives", {
-        account_id: selected?.account_id,
         report_id: report?.id,
         date_from: report?.filters.date_from,
         date_to: report?.filters.date_to,
@@ -66,7 +66,10 @@ export function useTaggingCreatives() {
           launched_at_to: report.filters.launched_at_to,
         }),
         ...(report?.filters.metric_filters?.length && {
-          metric_filters: report.filters.metric_filters,
+          metric_filters: report.filters.metric_filters.map((f) => ({
+            ...f,
+            metric: toBackendMetricField(f.metric),
+          })),
         }),
         page: filters.page,
         limit: 10,

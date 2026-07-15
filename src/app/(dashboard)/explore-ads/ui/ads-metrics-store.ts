@@ -149,6 +149,21 @@ export const METRIC_DEFS: MetricDef[] = [
   },
 ];
 
+// Backend stores metrics under `metrics.<field>` in Mongo using camelCase
+// field names. Most MetricKeys match as-is, but these four don't — convert
+// at every outbound `sort`/`metric_filters` payload so the backend never
+// has to guess or maintain its own translation.
+const BACKEND_METRIC_FIELD: Partial<Record<MetricKey, string>> = {
+  hook_rate: "hookRate",
+  hold_rate: "holdRate",
+  atc_rate: "atcRate",
+  link_clicks: "linkClicks",
+};
+
+export function toBackendMetricField(key: string): string {
+  return BACKEND_METRIC_FIELD[key as MetricKey] ?? key;
+}
+
 // Bind currency symbol at render time
 export function getMetricDefs(currency: string): MetricDef[] {
   const sym = currencySymbol(currency);
