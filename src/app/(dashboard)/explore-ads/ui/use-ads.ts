@@ -22,6 +22,8 @@ export type AdsResponse = {
   fetched_at: string | null;
   ttl_minutes?: number;
   window_days?: number;
+  window_date_from?: string;
+  window_date_to?: string;
 };
 
 export function useAds(reportId?: string) {

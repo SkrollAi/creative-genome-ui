@@ -210,7 +210,7 @@ function AdTab({
               <span className="text-xs text-muted-foreground w-20 shrink-0">
                 {label}
               </span>
-              <span className="text-sm font-medium text-right wrap-break-words min-w-0">
+              <span className="text-sm font-medium text-right break-all min-w-0">
                 {val || "—"}
               </span>
             </div>

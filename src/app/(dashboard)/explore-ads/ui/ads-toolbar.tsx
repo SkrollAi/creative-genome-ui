@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { format } from "date-fns";
 import { SlidersHorizontal, ChevronDown, BookmarkPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -146,14 +147,16 @@ export function AdsToolbar({ actions, hideSave, reportId }: Props) {
           {reportId ? (
             <MetricsFreshness reportId={reportId} />
           ) : (
-            data?.window_days && (
-              <span
-                className="text-xs text-muted-foreground whitespace-nowrap cursor-help"
-                title={`Showing performance from the last ${data.window_days} days. Need a different date range? Save this view as a report to pick your own dates.`}
-              >
-                Last {data.window_days} days
-              </span>
-            )
+            data?.window_date_from &&
+              data?.window_date_to && (
+                <span
+                  className="text-xs text-muted-foreground whitespace-nowrap cursor-help"
+                  title={`Showing performance from ${format(new Date(data.window_date_from), "MMM d")} to ${format(new Date(data.window_date_to), "MMM d")} (last synced window). Need a different date range? Save this view as a report to pick your own dates.`}
+                >
+                  {format(new Date(data.window_date_from), "MMM d")} –{" "}
+                  {format(new Date(data.window_date_to), "MMM d")}
+                </span>
+              )
           )}
         </div>
       </div>
