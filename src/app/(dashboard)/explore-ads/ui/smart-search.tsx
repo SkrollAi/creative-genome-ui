@@ -26,21 +26,32 @@ export function SmartSearch() {
 
   const fieldLabel = FIELDS.find((f) => f.key === field)?.label ?? "Ad Name";
 
-  const chips = FIELDS.filter((f) => !!filters[f.key]).map((f) => ({
-    key: f.key,
-    label: f.label,
-    value: filters[f.key] as string,
-  }));
+  // One chip per value, not per field — a field can have several active
+  // values, OR-matched on the backend.
+  const chips = FIELDS.flatMap((f) =>
+    (filters[f.key] as string[]).map((value, i) => ({
+      key: f.key,
+      label: f.label,
+      value,
+      index: i,
+    }))
+  );
 
   function addChip() {
     const trimmed = input.trim();
     if (!trimmed) return;
-    setFilters({ [field]: trimmed, page: 1 });
+    const existing = filters[field] as string[];
+    if (existing.includes(trimmed)) {
+      setInput("");
+      return;
+    }
+    setFilters({ [field]: [...existing, trimmed], page: 1 });
     setInput("");
   }
 
-  function removeChip(key: FieldKey) {
-    setFilters({ [key]: "", page: 1 });
+  function removeChip(key: FieldKey, index: number) {
+    const existing = filters[key] as string[];
+    setFilters({ [key]: existing.filter((_, i) => i !== index), page: 1 });
   }
 
   return (
@@ -87,13 +98,13 @@ export function SmartSearch() {
         <div className="flex items-center gap-1.5 flex-wrap">
           {chips.map((chip) => (
             <span
-              key={chip.key}
+              key={`${chip.key}-${chip.index}`}
               className="flex items-center gap-1 text-xs bg-primary/10 text-primary rounded-md px-2 py-1 font-medium"
             >
               <span className="text-muted-foreground">{chip.label}:</span>
               {chip.value}
               <button
-                onClick={() => removeChip(chip.key as FieldKey)}
+                onClick={() => removeChip(chip.key as FieldKey, chip.index)}
                 className="hover:text-destructive ml-0.5"
               >
                 <X className="size-3" />

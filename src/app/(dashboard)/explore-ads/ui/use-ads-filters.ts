@@ -46,9 +46,11 @@ function defaultDates() {
 export type MetricFilter = { metric: string; operator: string; value: number };
 
 export type AdsFilters = {
-  ad_name: string;
-  adset_name: string;
-  campaign_name: string;
+  // Each is a list — multiple values are OR-matched (any one of them can
+  // match), not ANDed together.
+  ad_name: string[];
+  adset_name: string[];
+  campaign_name: string[];
   type: string;
   status: string;
   sort: string;
@@ -64,9 +66,9 @@ export type AdsFilters = {
 
 export function getDefaultFilters(): AdsFilters {
   return {
-    ad_name: "",
-    adset_name: "",
-    campaign_name: "",
+    ad_name: [],
+    adset_name: [],
+    campaign_name: [],
     type: "all",
     status: "all",
     sort: "spend",

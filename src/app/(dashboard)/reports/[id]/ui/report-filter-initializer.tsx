@@ -25,9 +25,9 @@ export function ReportFilterInitializer({ id }: { id: string }) {
     const date_to = f.date_to ?? defaultDates.date_to;
 
     setFilters({
-      ad_name: f.ad_name ?? "",
-      adset_name: f.adset_name ?? "",
-      campaign_name: f.campaign_name ?? "",
+      ad_name: f.ad_name ?? [],
+      adset_name: f.adset_name ?? [],
+      campaign_name: f.campaign_name ?? [],
       type: f.creative_type ?? "all",
       status: f.status ?? "all",
       sort: f.sort ?? "spend",

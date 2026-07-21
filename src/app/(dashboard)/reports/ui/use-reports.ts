@@ -11,9 +11,9 @@ export type Report = {
   name: string;
   filters: {
     search?: string;
-    ad_name?: string;
-    adset_name?: string;
-    campaign_name?: string;
+    ad_name?: string[];
+    adset_name?: string[];
+    campaign_name?: string[];
     creative_type?: string;
     status?: string;
     sort?: string;
