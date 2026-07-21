@@ -41,12 +41,13 @@ export function useTaggingCreatives() {
   const report = filters.selected_report;
 
   return useQuery({
-    queryKey: ["tagging-creatives", selected?.account_id, filters],
+    queryKey: ["tagging-creatives", selected?.ad_account_id, filters],
     queryFn: async () => {
       const res = await api.post("/creative_genome/reports/creatives", {
         report_id: report?.id,
         date_from: report?.filters.date_from,
         date_to: report?.filters.date_to,
+        skip_metrics_refresh: true,
         sort: "is_tagged",
         order: "asc",
         ...(report?.filters.status &&
@@ -84,9 +85,10 @@ export function useTaggingCreatives() {
           has_prev: boolean;
           total_items: number;
         };
+        fetched_at: string | null;
       };
     },
-    enabled: !!selected?.account_id && !!report,
+    enabled: !!selected?.ad_account_id && !!report,
     placeholderData: (prev) => prev,
   });
 }
@@ -105,14 +107,14 @@ export function useTagLibrary() {
   const { selected } = useAdAccount();
 
   return useQuery({
-    queryKey: ["tag-library", selected?.account_id],
+    queryKey: ["tag-library", selected?.ad_account_id],
     queryFn: async () => {
       const res = await api.get("/creative_genome/tags/library", {
-        params: { account_id: selected?.account_id },
+        params: { account_id: selected?.ad_account_id },
       });
       return res.data.library as TagCategory[];
     },
-    enabled: !!selected?.account_id,
+    enabled: !!selected?.ad_account_id,
   });
 }
 
@@ -129,17 +131,17 @@ export function useSaveTags() {
     }) => {
       const res = await api.post("/creative_genome/tags/save", {
         ...payload,
-        account_id: selected?.account_id,
+        account_id: selected?.ad_account_id,
       });
       return res.data;
     },
     onSuccess: () => {
       qc.invalidateQueries({
-        queryKey: ["tagging-creatives", selected?.account_id],
+        queryKey: ["tagging-creatives", selected?.ad_account_id],
       });
-      qc.invalidateQueries({ queryKey: ["ads", selected?.account_id] });
-      qc.invalidateQueries({ queryKey: ["tag-library", selected?.account_id] });
-      qc.invalidateQueries({ queryKey: ["matrix", selected?.account_id] });
+      qc.invalidateQueries({ queryKey: ["ads", selected?.ad_account_id] });
+      qc.invalidateQueries({ queryKey: ["tag-library", selected?.ad_account_id] });
+      qc.invalidateQueries({ queryKey: ["matrix", selected?.ad_account_id] });
     },
   });
 }

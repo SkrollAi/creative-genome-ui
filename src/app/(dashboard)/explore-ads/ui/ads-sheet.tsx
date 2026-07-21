@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import { getMetricDefs } from "./ads-metrics-store";
 import { useAdAccount } from "@/context/ad-account-context";
 import { TAG_COLORS } from "./ads-card";
-import type { Creative, AdEntry, AdMetrics } from "./ads-card";
+import type { Creative, CreativeInfo, AdMetrics, SharedAd } from "./ads-card";
 
 type Props = { creative: Creative | null; open: boolean; onClose: () => void };
 
@@ -121,12 +121,94 @@ function MetricsGrid({
   );
 }
 
+// Creative copy (headline/CTA/primary text) lives on the CREATIVE now, not
+// per ad — every ad sharing a creative has identical copy by definition
+// (Decision 4's locked schema), so it's shown once here, not duplicated per
+// ad tab. Meta can return several variations (titles up to 13, bodies up to
+// 7 observed on real data) — all of them are shown, not just the first.
+function CreativeCopy({ info }: { info: CreativeInfo }) {
+  if (!info.headline.length && !info.cta && !info.primary_text.length)
+    return null;
+  return (
+    <div className="px-5 py-4 border-b border-border">
+      <SectionLabel icon={Pencil} label="Creative copy" />
+      <div className="flex flex-col gap-3">
+        {info.headline.length > 0 && (
+          <div>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">
+              Headline{info.headline.length > 1 ? "s" : ""}
+            </p>
+            <div className="flex flex-col gap-1.5">
+              {info.headline.map((h, i) => (
+                <div key={i} className="rounded-md bg-muted/40 px-3 py-2.5">
+                  <p className="text-sm font-medium leading-snug">{h}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {info.cta && (
+          <div>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">
+              CTA
+            </p>
+            <div className="rounded-md bg-muted/40 px-3 py-2.5 flex flex-col gap-1">
+              <p className="text-sm font-medium">
+                {info.cta.replace(/_/g, " ")}
+              </p>
+              {info.cta_url && (
+                <a
+                  href={info.cta_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-muted-foreground hover:text-primary underline underline-offset-2 truncate transition-colors"
+                >
+                  {info.cta_url}
+                </a>
+              )}
+              {info.cta_app_link && (
+                <a
+                  href={info.cta_app_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-muted-foreground hover:text-primary underline underline-offset-2 truncate transition-colors"
+                >
+                  {info.cta_app_link} (app deep link)
+                </a>
+              )}
+            </div>
+          </div>
+        )}
+        {info.primary_text.length > 0 && (
+          <div>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">
+              Primary text{info.primary_text.length > 1 ? "s" : ""}
+            </p>
+            <div className="flex flex-col gap-1.5">
+              {info.primary_text.map((t, i) => (
+                <div
+                  key={i}
+                  className="max-h-40 overflow-y-auto rounded-md bg-muted/40 px-3 py-2.5"
+                >
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/90">
+                    {t}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function AdTab({
   ad,
   currency,
   accountId,
 }: {
-  ad: AdEntry;
+  ad: SharedAd;
   currency: string;
   accountId: string;
 }) {
@@ -141,61 +223,6 @@ function AdTab({
           currency={currency}
         />
       </div>
-
-      {/* Creative copy */}
-      {(ad.headline || ad.cta || ad.primary_text) && (
-        <div className="px-5 py-4">
-          <SectionLabel icon={Pencil} label="Creative copy" />
-          <div className="flex flex-col gap-3">
-            {ad.headline && (
-              <div>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">
-                  Headline
-                </p>
-                <div className="rounded-md bg-muted/40 px-3 py-2.5">
-                  <p className="text-sm font-medium leading-snug">
-                    {ad.headline}
-                  </p>
-                </div>
-              </div>
-            )}
-            {ad.cta && (
-              <div>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">
-                  CTA
-                </p>
-                <div className="rounded-md bg-muted/40 px-3 py-2.5 flex flex-col gap-1">
-                  <p className="text-sm font-medium">
-                    {ad.cta.replace(/_/g, " ")}
-                  </p>
-                  {ad.cta_url && (
-                    <a
-                      href={ad.cta_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-muted-foreground hover:text-primary underline underline-offset-2 truncate transition-colors"
-                    >
-                      {ad.cta_url}
-                    </a>
-                  )}
-                </div>
-              </div>
-            )}
-            {ad.primary_text && (
-              <div>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">
-                  Primary text
-                </p>
-                <div className="max-h-40 overflow-y-auto rounded-md bg-muted/40 px-3 py-2.5">
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/90">
-                    {ad.primary_text}
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Structure */}
       <div className="px-5 py-4">
@@ -253,16 +280,24 @@ export function AdsSheet({ creative, open, onClose }: Props) {
   const [playing, setPlaying] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
   const { selected: account } = useAdAccount();
-  const currency = account?.currency ?? "USD";
-  const accountId = account?.account_id ?? "";
+  const currency = account?.currency ?? "INR";
+  const accountId = account?.ad_account_id ?? "";
+
+  // Every ad sharing this creative is already embedded on `creative` by the
+  // backend (explore-ads: aggregate_cg_creative_metrics_for_window, reports/
+  // tagging: _aggregate_cg_creatives_live) — no separate fetch needed here.
+  const ads = creative?.ads;
 
   if (!creative) return null;
 
-  const isVideo = creative.creative_type === "video";
+  const info = creative.creative;
+  const ad = creative.representative_ad;
+  const primaryAsset = info.assets[0];
+  const isVideo = info.creative_type === "video";
   const previewSrc = isVideo
-    ? creative.thumbnail_url || creative.url
-    : creative.url;
-  const rep = creative.ads[0];
+    ? info.thumbnail_url || primaryAsset?.url
+    : primaryAsset?.url;
+  const headline = info.headline[0] || "";
 
   return (
     <Sheet
@@ -276,29 +311,30 @@ export function AdsSheet({ creative, open, onClose }: Props) {
       }}
     >
       <SheetContent className="w-150! max-w-150! overflow-y-auto p-0 gap-0 flex flex-col">
-        {/* ── Creative media ─────────────────────────────────────── */}
-        <div className="relative aspect-video bg-slate-900 w-full shrink-0">
-          {playing && isVideo && creative.url ? (
+        {/* ── Creative media — natural aspect ratio, letterboxed rather
+            than stretched/cropped ─────────────────────────────────── */}
+        <div className="relative bg-slate-900 w-full shrink-0 max-h-100 flex items-center justify-center">
+          {playing && isVideo && primaryAsset?.url ? (
             <video
-              src={creative.url}
-              className="absolute inset-0 w-full h-full object-cover"
+              src={primaryAsset.url}
+              className="w-full max-h-100 object-contain"
               autoPlay
               controls
               onEnded={() => setPlaying(false)}
             />
           ) : (
-            <>
+            <div className="relative w-full aspect-video">
               {previewSrc && (
                 <Image
                   src={previewSrc}
-                  alt={rep?.headline || rep?.ad_name || ""}
+                  alt={headline || ad.ad_name || ""}
                   fill
-                  className="object-cover"
+                  className="object-contain"
                   unoptimized
                 />
               )}
-              <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/20 to-transparent" />
-              {isVideo && creative.url && (
+              <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/20 to-transparent pointer-events-none" />
+              {isVideo && primaryAsset?.url && (
                 <button
                   onClick={() => setPlaying(true)}
                   className="absolute inset-0 flex items-center justify-center group"
@@ -311,20 +347,20 @@ export function AdsSheet({ creative, open, onClose }: Props) {
               {/* Bottom overlay — headline + badges */}
               <div className="absolute bottom-0 left-0 right-0 px-4 pb-4 flex flex-col gap-2">
                 <p className="text-white text-base font-semibold leading-snug drop-shadow-sm">
-                  {rep?.headline || rep?.ad_name || ""}
+                  {headline || ad.ad_name || ""}
                 </p>
                 <div className="flex flex-wrap items-center gap-1.5">
                   <Chip
                     className={
-                      rep?.status === "ACTIVE"
+                      ad.status === "ACTIVE"
                         ? "bg-emerald-500/25 text-emerald-300"
                         : "bg-white/15 text-white/60"
                     }
                   >
-                    {rep?.status}
+                    {ad.status}
                   </Chip>
                   <Chip className="bg-white/15 text-white/70 capitalize">
-                    {creative.creative_type}
+                    {info.creative_type}
                   </Chip>
                   {creative.ad_count > 1 && (
                     <Chip className="bg-white/15 text-white/70">
@@ -333,19 +369,19 @@ export function AdsSheet({ creative, open, onClose }: Props) {
                   )}
                 </div>
                 <p className="text-[10px] text-white/40 font-mono">
-                  Creative {creative.creative_id}
+                  Creative {info.creative_id}
                 </p>
               </div>
-            </>
+            </div>
           )}
         </div>
 
         {/* ── Tags ───────────────────────────────────────────────── */}
-        {creative.is_tagged && Object.keys(creative.tags ?? {}).length > 0 && (
+        {info.is_tagged && Object.keys(info.tags ?? {}).length > 0 && (
           <div className="px-5 py-4 border-b border-border">
             <SectionLabel icon={Tag} label="Tags" />
             <div className="flex flex-col gap-2 mt-3">
-              {Object.entries(creative.tags).map(([key, vals], ci) => (
+              {Object.entries(info.tags).map(([key, vals], ci) => (
                 <div key={key} className="flex flex-wrap gap-1">
                   {vals.map((tag) => (
                     <span
@@ -370,11 +406,14 @@ export function AdsSheet({ creative, open, onClose }: Props) {
           <MetricsGrid metrics={creative.metrics} currency={currency} />
         </div>
 
+        {/* ── Creative copy (shared across every ad below) ────────── */}
+        <CreativeCopy info={info} />
+
         {/* ── Per-ad tabs ────────────────────────────────────────── */}
-        {creative.ads.length > 0 && (
+        {ads && ads.length > 0 && (
           <>
             <div className="flex border-b border-border overflow-x-auto shrink-0 bg-muted/30">
-              {creative.ads.map((ad, i) => (
+              {ads.map((ad, i) => (
                 <button
                   key={ad.ad_id}
                   onClick={() => setActiveTab(i)}
@@ -394,7 +433,7 @@ export function AdsSheet({ creative, open, onClose }: Props) {
             </div>
 
             <AdTab
-              ad={creative.ads[activeTab]}
+              ad={ads[activeTab] ?? ads[0]}
               currency={currency}
               accountId={accountId}
             />

@@ -15,7 +15,7 @@ import { useAdAccount } from "@/context/ad-account-context";
 export function MetricsSelector() {
   const { selected, toggle } = useAdsMetrics();
   const { selected: account } = useAdAccount();
-  const metricDefs = getMetricDefs(account?.currency ?? "USD");
+  const metricDefs = getMetricDefs(account?.currency ?? "INR");
 
   return (
     <DropdownMenu>

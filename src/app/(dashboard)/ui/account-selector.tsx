@@ -8,10 +8,6 @@ import { cn } from "@/lib/utils";
 import api from "@/lib/api";
 import { useAdAccount, type AdAccount } from "@/context/ad-account-context";
 import {
-  getAccountStatusLabel,
-  getAccountStatusTextClass,
-} from "@/lib/ad-account-status";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -45,7 +41,7 @@ export function AccountSelector() {
   useEffect(() => {
     if (!data) return;
     setAccounts(data);
-    if (selected && !data.some((a) => a.account_id === selected.account_id)) {
+    if (selected && !data.some((a) => a.ad_account_id === selected.ad_account_id)) {
       setSelected(null);
     }
   }, [data]);
@@ -80,7 +76,7 @@ export function AccountSelector() {
                     {selected?.name ?? "Select account"}
                   </span>
                   <span className="text-[11px] text-muted-foreground truncate leading-tight">
-                    {selected?.account_id ?? "No account selected"}
+                    {selected?.ad_account_id ?? "No account selected"}
                   </span>
                 </div>
                 <ChevronsUpDown className="size-4 text-muted-foreground shrink-0 group-data-[collapsible=icon]:hidden" />
@@ -101,7 +97,7 @@ export function AccountSelector() {
               <div className="max-h-72 overflow-y-auto divide-y divide-border">
                 {(accounts ?? []).map((account) => (
                   <DropdownMenuItem
-                    key={account.account_id}
+                    key={account.ad_account_id}
                     onClick={() => handleSelect(account)}
                     className={cn(
                       "flex items-start gap-1 rounded-none px-3 py-2.5 cursor-pointer",
@@ -113,14 +109,6 @@ export function AccountSelector() {
                         {account.name}
                       </span>
                       <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                        <span
-                          className={getAccountStatusTextClass(
-                            account.account_status
-                          )}
-                        >
-                          {getAccountStatusLabel(account.account_status)}
-                        </span>
-                        <span className="text-border">·</span>
                         {account.is_syncing ? (
                           <span className="text-amber-600">Syncing</span>
                         ) : account.is_synced && account.sync_had_errors ? (

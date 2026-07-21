@@ -48,7 +48,7 @@ export function MatrixSheet({ creatives }: Props) {
     col_category,
   } = useMatrixStore();
   const { baseline } = useMatrixDerived(creatives, undefined);
-  const metricDefs = getMetricDefs(account?.currency ?? "USD");
+  const metricDefs = getMetricDefs(account?.currency ?? "INR");
 
   if (!selected_cell || !baseline) return null;
 
@@ -185,11 +185,14 @@ export function MatrixSheet({ creatives }: Props) {
             </p>
             <div className="flex gap-2 overflow-x-auto pb-2">
               {cellCreatives.map((c) => {
-                const isVideo = c.creative_type === "video";
-                const src = isVideo ? c.thumbnail_url || c.url : c.url;
+                const isVideo = c.creative.creative_type === "video";
+                const asset = c.creative.assets[0];
+                const src = isVideo
+                  ? c.creative.thumbnail_url || asset?.url
+                  : asset?.url;
                 return (
                   <div
-                    key={c.creative_id}
+                    key={c.creative.creative_id}
                     className="relative w-24 aspect-3/4 rounded-lg overflow-hidden bg-muted shrink-0"
                   >
                     {src ? (
@@ -197,7 +200,7 @@ export function MatrixSheet({ creatives }: Props) {
                         src={src}
                         alt=""
                         fill
-                        className="object-cover"
+                        className="object-contain"
                         unoptimized
                       />
                     ) : (

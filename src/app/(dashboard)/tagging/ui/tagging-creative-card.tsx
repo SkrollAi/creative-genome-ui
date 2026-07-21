@@ -18,11 +18,13 @@ export function TaggingCreativeCard({
   onSelect,
   onDetail,
 }: Props) {
-  const rep = creative.ads[0];
-  const isVideo = creative.creative_type === "video";
+  const info = creative.creative;
+  const ad = creative.representative_ad;
+  const primaryAsset = info.assets[0];
+  const isVideo = info.creative_type === "video";
   const previewSrc = isVideo
-    ? creative.thumbnail_url || creative.url
-    : creative.url;
+    ? info.thumbnail_url || primaryAsset?.url
+    : primaryAsset?.url;
 
   return (
     <div
@@ -59,10 +61,10 @@ export function TaggingCreativeCard({
       {/* Name + tagged status */}
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium truncate">
-          {rep?.ad_name || creative.creative_id}
+          {ad.ad_name || info.creative_id}
         </p>
         <div className="flex items-center gap-1.5 mt-0.5">
-          {creative.is_tagged && (
+          {info.is_tagged && (
             <p className="text-[10px] text-emerald-600 font-medium">tagged</p>
           )}
           {creative.ad_count > 1 && (

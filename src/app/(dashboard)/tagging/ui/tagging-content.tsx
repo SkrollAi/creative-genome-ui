@@ -47,7 +47,7 @@ import type { Report } from "@/app/(dashboard)/reports/ui/use-reports";
 
 export function TaggingContent() {
   const { selected: account } = useAdAccount();
-  const sym = currencySymbol(account?.currency ?? "USD");
+  const sym = currencySymbol(account?.currency ?? "INR");
   const { data, isLoading, isFetching } = useTaggingCreatives();
   const { data: library } = useTagLibrary();
   const { mutate: saveTags, isPending: isSaving } = useSaveTags();
@@ -79,16 +79,16 @@ export function TaggingContent() {
   // when creative changes, prefill existing tags
   useEffect(() => {
     if (selectedCreative) {
-      setTags(selectedCreative.tags ?? {});
+      setTags(selectedCreative.creative.tags ?? {});
       setPlaying(false);
       setSaved(false);
     }
-  }, [selectedCreative?.creative_id]);
+  }, [selectedCreative?.creative.creative_id]);
 
   function handleSave() {
     if (!selectedCreative) return;
     saveTags(
-      { creative_id: selectedCreative.creative_id, tags },
+      { creative_id: selectedCreative.creative.creative_id, tags },
       {
         onSuccess: () => {
           setSaved(true);
@@ -109,11 +109,14 @@ export function TaggingContent() {
     );
   }
 
-  const isVideo = selectedCreative?.creative_type === "video";
-  const previewSrc = selectedCreative
+  const selectedInfo = selectedCreative?.creative;
+  const selectedAd = selectedCreative?.representative_ad;
+  const selectedAsset = selectedInfo?.assets[0];
+  const isVideo = selectedInfo?.creative_type === "video";
+  const previewSrc = selectedInfo
     ? isVideo
-      ? selectedCreative.thumbnail_url || selectedCreative.url
-      : selectedCreative.url
+      ? selectedInfo.thumbnail_url || selectedAsset?.url
+      : selectedAsset?.url
     : null;
 
   return (
@@ -240,9 +243,12 @@ export function TaggingContent() {
             ) : (
               creatives.map((c) => (
                 <TaggingCreativeCard
-                  key={c.creative_id}
+                  key={c.creative.creative_id}
                   creative={c}
-                  selected={selectedCreative?.creative_id === c.creative_id}
+                  selected={
+                    selectedCreative?.creative.creative_id ===
+                    c.creative.creative_id
+                  }
                   onSelect={() => setSelectedCreative(c)}
                   onDetail={() => setSheetCreative(c)}
                 />
@@ -289,28 +295,28 @@ export function TaggingContent() {
               {/* Creative preview — sticky */}
               <div className="w-64 shrink-0">
                 <div className="sticky top-6 flex flex-col gap-4">
-                  <div className="relative aspect-3/4 rounded-xl overflow-hidden bg-muted">
-                    {playing && isVideo && selectedCreative.url ? (
+                  <div className="relative rounded-xl overflow-hidden bg-muted">
+                    {playing && isVideo && selectedAsset?.url ? (
                       <video
-                        src={selectedCreative.url}
-                        className="absolute inset-0 w-full h-full object-cover"
+                        src={selectedAsset.url}
+                        className="w-full max-h-100 object-contain mx-auto"
                         autoPlay
                         controls
                         onEnded={() => setPlaying(false)}
                       />
                     ) : (
-                      <>
+                      <div className="relative w-full aspect-3/4">
                         {previewSrc && (
                           <Image
                             src={previewSrc}
                             alt=""
                             fill
-                            className="object-cover"
+                            className="object-contain"
                             unoptimized
                             loading="eager"
                           />
                         )}
-                        <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent" />
+                        <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
                         {/* type badge */}
                         <div className="absolute top-3 left-3 flex items-center gap-1 bg-black/55 text-white text-xs px-2 py-1 rounded-full">
                           {isVideo ? (
@@ -326,7 +332,7 @@ export function TaggingContent() {
                             +{selectedCreative.ad_count - 1} more
                           </div>
                         )}
-                        {isVideo && selectedCreative.url && (
+                        {isVideo && selectedAsset?.url && (
                           <button
                             onClick={() => setPlaying(true)}
                             className="absolute inset-0 flex items-center justify-center"
@@ -337,11 +343,9 @@ export function TaggingContent() {
                           </button>
                         )}
                         <p className="absolute bottom-3 left-3 right-3 text-white text-sm font-semibold leading-snug line-clamp-2">
-                          {selectedCreative.ads[0]?.headline ||
-                            selectedCreative.ads[0]?.ad_name ||
-                            ""}
+                          {selectedInfo?.headline[0] || selectedAd?.ad_name || ""}
                         </p>
-                      </>
+                      </div>
                     )}
                   </div>
 
@@ -374,7 +378,7 @@ export function TaggingContent() {
                       {
                         label: "Tags",
                         value: String(
-                          Object.values(selectedCreative.tags ?? {}).flat()
+                          Object.values(selectedInfo?.tags ?? {}).flat()
                             .length
                         ),
                       },
@@ -390,6 +394,17 @@ export function TaggingContent() {
                       </div>
                     ))}
                   </div>
+                  {data?.fetched_at && (
+                    <p className="text-[10px] text-muted-foreground text-center -mt-2">
+                      Metrics as of{" "}
+                      {new Date(data.fetched_at).toLocaleString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  )}
                 </div>
               </div>
 

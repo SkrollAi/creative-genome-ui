@@ -76,7 +76,11 @@ export function getDefaultFilters(): AdsFilters {
     launched_at_to: "",
     page: 1,
     limit: 20,
-    metric_filters: [],
+    // Explicit, visible default — not a hidden backend rule. Shown in the
+    // "Min. thresholds" panel as a real, editable/removable filter row, so
+    // the user can see exactly why a creative isn't showing (and can change
+    // or clear it) instead of a silent, unoverridable cache-level exclusion.
+    metric_filters: [{ metric: "spend", operator: "gt", value: 0 }],
   };
 }
 

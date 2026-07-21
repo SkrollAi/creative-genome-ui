@@ -8,13 +8,11 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import api from "@/lib/api";
 import { useAdAccount, type AdAccount } from "@/context/ad-account-context";
-import { getAccountStatusLabel } from "@/lib/ad-account-status";
 
 type Props = {
   account: AdAccount | null;
@@ -30,11 +28,11 @@ export function SyncAccountDialog({ account, onClose }: Props) {
     setSyncing(true);
     try {
       await api.post("/creative_genome/ad-accounts/sync", {
-        account_id: account.account_id,
+        account_id: account.ad_account_id,
       });
       setAccounts(
         accounts.map((a) =>
-          a.account_id === account.account_id
+          a.ad_account_id === account.ad_account_id
             ? { ...a, is_syncing: true }
             : a
         )
@@ -57,9 +55,6 @@ export function SyncAccountDialog({ account, onClose }: Props) {
             <RefreshCw className="size-4" />
             Sync {account?.name}
           </DialogTitle>
-          <DialogDescription>
-            Status: {getAccountStatusLabel(account?.account_status ?? null)}
-          </DialogDescription>
         </DialogHeader>
 
         <p className="text-sm text-muted-foreground">

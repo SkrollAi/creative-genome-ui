@@ -25,7 +25,7 @@ export function MatrixGrid({ creatives, library }: Props) {
     creatives,
     library
   );
-  const metricDefs = getMetricDefs(account?.currency ?? "USD");
+  const metricDefs = getMetricDefs(account?.currency ?? "INR");
   const metricDef = metricDefs.find((d) => d.key === color_by) ?? metricDefs[0];
 
   if (!rowTags.length || !colTags.length || !baseline) {

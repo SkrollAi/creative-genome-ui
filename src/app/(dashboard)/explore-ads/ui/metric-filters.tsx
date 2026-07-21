@@ -104,8 +104,7 @@ export function MetricFilters() {
 
         {draft.length === 0 && (
           <p className="text-sm text-muted-foreground">
-            No thresholds set. Only creatives with spend &gt; 0 are shown by
-            default.
+            No thresholds set. Every synced creative will be shown.
           </p>
         )}
 
@@ -179,11 +178,12 @@ export function MetricFilters() {
                     type="number"
                     min={0}
                     step="any"
-                    value={f.value === 0 ? "" : f.value}
+                    value={f.value}
                     placeholder="0"
-                    onChange={(e) =>
-                      update(i, { value: parseFloat(e.target.value) || 0 })
-                    }
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      update(i, { value: raw === "" ? 0 : parseFloat(raw) });
+                    }}
                     className={cn("h-8 text-xs", def?.unit === "%" && "pr-7")}
                   />
                 </div>

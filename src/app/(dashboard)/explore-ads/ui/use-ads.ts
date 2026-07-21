@@ -31,7 +31,7 @@ export function useAds(reportId?: string) {
   const { filters } = useAdsFiltersStore();
 
   return useQuery({
-    queryKey: ["ads", selected?.account_id, reportId, filters],
+    queryKey: ["ads", selected?.ad_account_id, reportId, filters],
     queryFn: async (): Promise<AdsResponse> => {
       if (reportId) {
         const res = await api.post("/creative_genome/reports/creatives", {
@@ -60,7 +60,7 @@ export function useAds(reportId?: string) {
       }
 
       const res = await api.post("/creative_genome/explore-ads/list", {
-        account_id: selected?.account_id,
+        account_id: selected?.ad_account_id,
         ad_name: filters.ad_name,
         adset_name: filters.adset_name,
         campaign_name: filters.campaign_name,
@@ -81,7 +81,7 @@ export function useAds(reportId?: string) {
       });
       return res.data;
     },
-    enabled: !!selected?.account_id,
+    enabled: !!selected?.ad_account_id,
     placeholderData: (prev) => prev,
   });
 }
@@ -118,7 +118,7 @@ export function useForceRefreshAds(reportId: string) {
       }),
     });
     qc.setQueryData(
-      ["ads", selected?.account_id, reportId, filters],
+      ["ads", selected?.ad_account_id, reportId, filters],
       res.data
     );
   };

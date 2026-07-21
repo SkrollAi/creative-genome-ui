@@ -58,7 +58,7 @@ export function AdsContent({ reportId }: { reportId?: string }) {
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
                 {creatives.map((creative) => (
                   <AdsCard
-                    key={creative.creative_id}
+                    key={creative.creative.creative_id}
                     creative={creative}
                     onSelect={setSheetAd}
                   />

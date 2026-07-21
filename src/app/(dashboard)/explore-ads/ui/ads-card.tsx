@@ -59,32 +59,56 @@ export type AdMetrics = {
   date_to?: string;
 };
 
-export type AdEntry = {
-  ad_id: string;
-  ad_name: string;
-  adset_id: string;
-  adset_name: string;
-  campaign_id: string;
-  campaign_name: string;
-  status: "ACTIVE" | "PAUSED";
-  launched_at: string;
-  headline: string;
-  primary_text: string;
+export type CreativeAsset = { kind: "image" | "video" | ""; url: string };
+
+// Fields owned by cg_creatives — shared by every ad using this creative.
+// Mirrors the backend's actual logical split; never re-flatten this into
+// the parent Creative object.
+export type CreativeInfo = {
+  creative_id: string;
+  creative_type: "video" | "image";
+  assets: CreativeAsset[];
+  thumbnail_url: string;
+  headline: string[];
+  primary_text: string[];
   cta: string;
   cta_url: string;
+  cta_app_link: string;
+  tags: Record<string, string[]>;
+  is_tagged: boolean;
+};
+
+// Fields owned by cg_ads — specific to the single representative (highest-
+// spend) ad. The full list of every ad sharing this creative is in `ads`
+// below (explore-ads) or fetched live (reports/tagging — see ads-sheet.tsx).
+export type RepresentativeAd = {
+  ad_id: string;
+  ad_name: string;
+  status: "ACTIVE" | "PAUSED" | "";
+  launched_at: string;
+};
+
+export type SharedAd = {
+  ad_id: string;
+  ad_name: string;
+  adset_name: string;
+  campaign_name: string;
+  status: "ACTIVE" | "PAUSED" | "";
+  launched_at: string;
   metrics: AdMetrics | null;
 };
 
 export type Creative = {
-  creative_id: string;
-  creative_type: "video" | "image";
-  url: string | null;
-  thumbnail_url: string | null;
+  creative: CreativeInfo;
+  representative_ad: RepresentativeAd;
   ad_count: number;
-  tags: Record<string, string[]>;
-  is_tagged: boolean;
+  window_date_from: string;
+  window_date_to: string;
   metrics: AdMetrics | null;
-  ads: AdEntry[];
+  // Every ad sharing this creative, with its own metrics — embedded by the
+  // backend for explore-ads, reports, and tagging alike (see
+  // serialize_creative), so the sheet never needs a separate fetch.
+  ads: SharedAd[];
 };
 
 type Props = { creative: Creative; onSelect: (creative: Creative) => void };
@@ -92,49 +116,53 @@ type Props = { creative: Creative; onSelect: (creative: Creative) => void };
 export function AdsCard({ creative, onSelect }: Props) {
   const { selected } = useAdsMetrics();
   const { selected: account } = useAdAccount();
-  const metricDefs = getMetricDefs(account?.currency ?? "USD");
+  const metricDefs = getMetricDefs(account?.currency ?? "INR");
   const selectedDefs = metricDefs.filter((d) => selected.includes(d.key));
   const [playing, setPlaying] = useState(false);
 
-  const rep = creative.ads[0]; // representative ad — highest spend
-  const previewSrc =
-    creative.creative_type === "video"
-      ? creative.thumbnail_url || creative.url
-      : creative.url;
-  const isVideo = creative.creative_type === "video";
-  const hasVideoUrl = isVideo && !!creative.url;
+  const info = creative.creative;
+  const ad = creative.representative_ad;
+  const primaryAsset = info.assets[0];
+  const isVideo = info.creative_type === "video";
+  const previewSrc = isVideo
+    ? info.thumbnail_url || primaryAsset?.url
+    : primaryAsset?.url;
+  const hasVideoUrl = isVideo && !!primaryAsset?.url;
   const extraAds = creative.ad_count - 1;
+  const headline = info.headline[0] || "";
 
   return (
     <div
       className="rounded-xl border border-border bg-card overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer"
       onClick={() => onSelect(creative)}
     >
-      {/* Creative area */}
-      <div className="relative aspect-3/4 bg-linear-to-br from-slate-800 to-slate-900 overflow-hidden">
+      {/* Creative area — natural aspect ratio, not stretched/cropped into a
+          fixed box (we don't store asset width/height, so the container
+          lets the media size itself instead of forcing a crop). */}
+      <div className="relative bg-linear-to-br from-slate-800 to-slate-900 overflow-hidden">
         {playing && hasVideoUrl ? (
           <video
-            src={creative.url ?? undefined}
-            className="absolute inset-0 w-full h-full object-cover"
+            src={primaryAsset?.url}
+            className="w-full max-h-100 object-contain mx-auto"
             autoPlay
             controls
             onEnded={() => setPlaying(false)}
           />
         ) : (
-          <>
+          <div className="relative w-full aspect-3/4">
             {previewSrc && (
               <Image
                 src={previewSrc}
-                alt={rep?.headline || rep?.ad_name || ""}
+                alt={headline || ad.ad_name || ""}
                 fill
-                className="object-cover"
+                className="object-contain"
                 unoptimized
                 loading="eager"
               />
             )}
 
             {/* Gradient overlay */}
-            <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/10 to-transparent" />
+            <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/10 to-transparent pointer-events-none" />
 
             {/* Type badge */}
             <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-black/55 text-white text-xs font-medium px-2 py-1 rounded-full backdrop-blur-sm">
@@ -170,9 +198,9 @@ export function AdsCard({ creative, onSelect }: Props) {
 
             {/* Headline overlay */}
             <p className="absolute bottom-3 left-3 right-3 text-white text-sm font-semibold leading-snug">
-              {rep?.headline || rep?.ad_name || ""}
+              {headline || ad.ad_name || ""}
             </p>
-          </>
+          </div>
         )}
       </div>
 
@@ -181,23 +209,23 @@ export function AdsCard({ creative, onSelect }: Props) {
         {/* Ad name + status */}
         <div className="flex items-center justify-between gap-2">
           <span className="text-xs text-muted-foreground truncate min-w-0">
-            {rep?.ad_name || "—"}
+            {ad.ad_name || "—"}
           </span>
           <span
             className={cn(
               "text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded shrink-0",
-              rep?.status === "ACTIVE"
+              ad.status === "ACTIVE"
                 ? "bg-emerald-100 text-emerald-700"
                 : "bg-muted text-muted-foreground"
             )}
           >
-            {rep?.status}
+            {ad.status}
           </span>
         </div>
 
         {/* Tag chips */}
-        {creative.is_tagged ? (
-          <TagChips tags={creative.tags} />
+        {info.is_tagged ? (
+          <TagChips tags={info.tags} />
         ) : (
           <span className="text-[10px] text-muted-foreground/60 border border-dashed border-muted-foreground/30 rounded-full px-2 py-0.5 w-fit">
             untagged
@@ -212,7 +240,7 @@ export function AdsCard({ creative, onSelect }: Props) {
               {selectedDefs.map((def) => {
                 const val =
                   def.key === "launched_at"
-                    ? creative.ads[0]?.launched_at
+                    ? ad.launched_at
                     : (creative.metrics?.[def.key as keyof AdMetrics] as
                         | number
                         | null

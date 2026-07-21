@@ -49,7 +49,7 @@ function fmtDate(d?: string) {
 
 export function MatrixContent() {
   const { selected: account } = useAdAccount();
-  const metricDefs = getMetricDefs(account?.currency ?? "USD");
+  const metricDefs = getMetricDefs(account?.currency ?? "INR");
 
   const {
     selected_report,

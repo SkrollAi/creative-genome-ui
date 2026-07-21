@@ -60,7 +60,7 @@ export function UpdateReportDialog({ report, open, onClose }: Props) {
         },
       });
       qc.invalidateQueries({ queryKey: ["report", report.id] });
-      qc.invalidateQueries({ queryKey: ["reports", selected?.account_id] });
+      qc.invalidateQueries({ queryKey: ["reports", selected?.ad_account_id] });
       toast.success("Report updated");
       onClose();
     } catch (err) {

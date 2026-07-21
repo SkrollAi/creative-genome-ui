@@ -8,16 +8,36 @@ import { useAdAccount } from "@/context/ad-account-context";
 import type { Report } from "@/app/(dashboard)/reports/ui/use-reports";
 import type { MetricKey } from "@/app/(dashboard)/explore-ads/ui/ads-metrics-store";
 import { toBackendMetricField } from "@/app/(dashboard)/explore-ads/ui/ads-metrics-store";
+import type { CreativeAsset } from "@/app/(dashboard)/explore-ads/ui/ads-card";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export type MatrixCreative = {
+// Same creative/ad logical split as Creative in ads-card.tsx — the backend
+// never re-flattens cg_creatives-owned fields and cg_ads-owned fields into
+// one object, so this type doesn't either.
+export type MatrixCreativeInfo = {
   creative_id: string;
   creative_type: "video" | "image";
-  url: string | null;
-  thumbnail_url: string | null;
-  ad_count: number;
+  assets: CreativeAsset[];
+  thumbnail_url: string;
+  headline: string[];
+  primary_text: string[];
+  cta: string;
+  cta_url: string;
+  cta_app_link: string;
   tags: Record<string, string[]>;
+};
+
+export type MatrixRepresentativeAd = {
+  ad_id: string;
+  ad_name: string;
+  status: "ACTIVE" | "PAUSED" | "";
+};
+
+export type MatrixCreative = {
+  creative: MatrixCreativeInfo;
+  representative_ad: MatrixRepresentativeAd;
+  ad_count: number;
   spend: number;
   impressions: number;
   reach: number;
@@ -99,7 +119,7 @@ export function useMatrixData() {
   const { selected_report } = useMatrixStore();
 
   return useQuery({
-    queryKey: ["matrix", selected?.account_id, selected_report?.id],
+    queryKey: ["matrix", selected?.ad_account_id, selected_report?.id],
     queryFn: async () => {
       const r = selected_report!;
       const res = await api.post("/creative_genome/matrix", {
@@ -133,7 +153,7 @@ export function useMatrixData() {
       });
       return res.data.creatives as MatrixCreative[];
     },
-    enabled: !!selected?.account_id && !!selected_report,
+    enabled: !!selected?.ad_account_id && !!selected_report,
     staleTime: 5 * 60 * 1000,
   });
 }
@@ -221,8 +241,8 @@ export function buildCellMap(
   const map = new Map<string, { creatives: MatrixCreative[] }>();
 
   for (const c of creatives) {
-    const rowTags = c.tags?.[rowCat] ?? [];
-    const colTags = c.tags?.[colCat] ?? [];
+    const rowTags = c.creative.tags?.[rowCat] ?? [];
+    const colTags = c.creative.tags?.[colCat] ?? [];
     for (const rt of rowTags) {
       for (const ct of colTags) {
         const key = `${rt}|||${ct}`;
@@ -274,11 +294,11 @@ export function useMatrixDerived(
 
     const rowTags = libRow
       ? [...libRow?.customTags, ...libRow.defaults]
-      : [...new Set(creatives.flatMap((c) => c.tags?.[row_category] ?? []))];
+      : [...new Set(creatives.flatMap((c) => c.creative.tags?.[row_category] ?? []))];
 
     const colTags = libCol
       ? [...libCol?.customTags, ...libCol.defaults]
-      : [...new Set(creatives.flatMap((c) => c.tags?.[col_category] ?? []))];
+      : [...new Set(creatives.flatMap((c) => c.creative.tags?.[col_category] ?? []))];
 
     const cellMap = buildCellMap(creatives, row_category, col_category);
     const baseline = creatives.length ? aggregateMetrics(creatives) : null;

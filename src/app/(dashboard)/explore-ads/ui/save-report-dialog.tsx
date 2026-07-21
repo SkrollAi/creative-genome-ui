@@ -35,7 +35,7 @@ export function SaveReportDialog({ open, onClose }: Props) {
     setSaving(true);
     try {
       await api.post("/creative_genome/reports/create", {
-        account_id: selected?.account_id,
+        account_id: selected?.ad_account_id,
         name: name.trim(),
         filters: {
           ad_name: filters.ad_name,
@@ -53,7 +53,7 @@ export function SaveReportDialog({ open, onClose }: Props) {
           metric_filters: filters.metric_filters ?? [],
         },
       });
-      qc.invalidateQueries({ queryKey: ["reports", selected?.account_id] });
+      qc.invalidateQueries({ queryKey: ["reports", selected?.ad_account_id] });
       toast.success(`Report "${name.trim()}" saved`);
       setName("");
       onClose();

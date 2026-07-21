@@ -2,9 +2,8 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 export type AdAccount = {
-  account_id: string;
+  ad_account_id: string;
   name: string;
-  account_status: number | null;
   is_synced: boolean;
   is_syncing: boolean;
   sync_had_errors: boolean;

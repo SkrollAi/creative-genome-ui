@@ -33,14 +33,14 @@ export type Report = {
 export function useReports() {
   const { selected } = useAdAccount();
   return useQuery<Report[]>({
-    queryKey: ["reports", selected?.account_id],
+    queryKey: ["reports", selected?.ad_account_id],
     queryFn: async () => {
       const res = await api.post("/creative_genome/reports/list", {
-        account_id: selected?.account_id,
+        account_id: selected?.ad_account_id,
       });
       return res.data.reports ?? [];
     },
-    enabled: !!selected?.account_id,
+    enabled: !!selected?.ad_account_id,
   });
 }
 
@@ -51,7 +51,7 @@ export function useDeleteReport() {
     mutationFn: (report_id: string) =>
       api.post("/creative_genome/reports/delete", { report_id }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["reports", selected?.account_id] });
+      qc.invalidateQueries({ queryKey: ["reports", selected?.ad_account_id] });
       toast.success("Report deleted");
     },
     onError: (err) =>
