@@ -11,11 +11,24 @@ import {
   Tag,
 } from "lucide-react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 import { cn } from "@/lib/utils";
 import { getMetricDefs } from "./ads-metrics-store";
 import { useAdAccount } from "@/context/ad-account-context";
 import { TAG_COLORS } from "./ads-card";
-import type { Creative, CreativeInfo, AdMetrics, SharedAd } from "./ads-card";
+import type {
+  Creative,
+  CreativeInfo,
+  AdMetrics,
+  SharedAd,
+  CreativeAsset,
+} from "./ads-card";
 
 type Props = { creative: Creative | null; open: boolean; onClose: () => void };
 
@@ -276,8 +289,54 @@ function AdTab({
   );
 }
 
-export function AdsSheet({ creative, open, onClose }: Props) {
+function AssetSlide({
+  asset,
+  alt,
+  posterUrl,
+}: {
+  asset: CreativeAsset;
+  alt: string;
+  // Video's cover/thumbnail image — separate from asset.url, which is the
+  // actual playable video source, not something <Image> can render as a
+  // static preview.
+  posterUrl?: string;
+}) {
   const [playing, setPlaying] = useState(false);
+  const isVideo = asset.kind === "video";
+  const previewSrc = isVideo ? posterUrl || asset.url : asset.url;
+
+  if (playing && isVideo && asset.url) {
+    return (
+      <video
+        src={asset.url}
+        className="w-full max-h-100 object-contain"
+        autoPlay
+        controls
+        onEnded={() => setPlaying(false)}
+      />
+    );
+  }
+
+  return (
+    <div className="relative w-full aspect-video">
+      {previewSrc && (
+        <Image src={previewSrc} alt={alt} fill className="object-contain" unoptimized />
+      )}
+      {isVideo && asset.url && (
+        <button
+          onClick={() => setPlaying(true)}
+          className="absolute inset-0 flex items-center justify-center group"
+        >
+          <div className="size-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30 group-hover:bg-white/35 transition-colors">
+            <Play className="size-5 text-white fill-white ml-0.5" />
+          </div>
+        </button>
+      )}
+    </div>
+  );
+}
+
+export function AdsSheet({ creative, open, onClose }: Props) {
   const [activeTab, setActiveTab] = useState(0);
   const { selected: account } = useAdAccount();
   const currency = account?.currency ?? "INR";
@@ -292,11 +351,7 @@ export function AdsSheet({ creative, open, onClose }: Props) {
 
   const info = creative.creative;
   const ad = creative.representative_ad;
-  const primaryAsset = info.assets[0];
-  const isVideo = info.creative_type === "video";
-  const previewSrc = isVideo
-    ? info.thumbnail_url || primaryAsset?.url
-    : primaryAsset?.url;
+  const assets = info.assets;
   const headline = info.headline[0] || "";
 
   return (
@@ -304,7 +359,6 @@ export function AdsSheet({ creative, open, onClose }: Props) {
       open={open}
       onOpenChange={(v) => {
         if (!v) {
-          setPlaying(false);
           setActiveTab(0);
           onClose();
         }
@@ -312,68 +366,68 @@ export function AdsSheet({ creative, open, onClose }: Props) {
     >
       <SheetContent className="w-150! max-w-150! overflow-y-auto p-0 gap-0 flex flex-col">
         {/* ── Creative media — natural aspect ratio, letterboxed rather
-            than stretched/cropped ─────────────────────────────────── */}
+            than stretched/cropped. Multiple assets (a multi-placement
+            creative's several placement variants) render as a swipeable
+            carousel; a single asset renders plainly, no carousel chrome. */}
         <div className="relative bg-slate-900 w-full shrink-0 max-h-100 flex items-center justify-center">
-          {playing && isVideo && primaryAsset?.url ? (
-            <video
-              src={primaryAsset.url}
-              className="w-full max-h-100 object-contain"
-              autoPlay
-              controls
-              onEnded={() => setPlaying(false)}
-            />
+          {assets.length > 1 ? (
+            <Carousel className="w-full">
+              <CarouselContent className="ml-0">
+                {assets.map((asset, i) => (
+                  <CarouselItem key={i} className="pl-0">
+                    <AssetSlide
+                      asset={asset}
+                      alt={headline || ad.ad_name || ""}
+                      posterUrl={asset.kind === "video" ? info.thumbnail_url : undefined}
+                    />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="left-2 bg-black/40 border-white/20 text-white hover:bg-black/60 hover:text-white" />
+              <CarouselNext className="right-2 bg-black/40 border-white/20 text-white hover:bg-black/60 hover:text-white" />
+            </Carousel>
           ) : (
-            <div className="relative w-full aspect-video">
-              {previewSrc && (
-                <Image
-                  src={previewSrc}
-                  alt={headline || ad.ad_name || ""}
-                  fill
-                  className="object-contain"
-                  unoptimized
-                />
-              )}
-              <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/20 to-transparent pointer-events-none" />
-              {isVideo && primaryAsset?.url && (
-                <button
-                  onClick={() => setPlaying(true)}
-                  className="absolute inset-0 flex items-center justify-center group"
-                >
-                  <div className="size-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30 group-hover:bg-white/35 transition-colors">
-                    <Play className="size-5 text-white fill-white ml-0.5" />
-                  </div>
-                </button>
-              )}
-              {/* Bottom overlay — headline + badges */}
-              <div className="absolute bottom-0 left-0 right-0 px-4 pb-4 flex flex-col gap-2">
-                <p className="text-white text-base font-semibold leading-snug drop-shadow-sm">
-                  {headline || ad.ad_name || ""}
-                </p>
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <Chip
-                    className={
-                      ad.status === "ACTIVE"
-                        ? "bg-emerald-500/25 text-emerald-300"
-                        : "bg-white/15 text-white/60"
-                    }
-                  >
-                    {ad.status}
-                  </Chip>
-                  <Chip className="bg-white/15 text-white/70 capitalize">
-                    {info.creative_type}
-                  </Chip>
-                  {creative.ad_count > 1 && (
-                    <Chip className="bg-white/15 text-white/70">
-                      {creative.ad_count} ads
-                    </Chip>
-                  )}
-                </div>
-                <p className="text-[10px] text-white/40 font-mono">
-                  Creative {info.creative_id}
-                </p>
-              </div>
-            </div>
+            <AssetSlide
+              asset={assets[0] ?? { kind: "", url: "" }}
+              alt={headline || ad.ad_name || ""}
+              posterUrl={assets[0]?.kind === "video" ? info.thumbnail_url : undefined}
+            />
           )}
+          {/* Overlay — gradient + headline + badges, shown once regardless
+              of how many assets there are, on top of whichever is active */}
+          <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/20 to-transparent pointer-events-none" />
+          <div className="absolute bottom-0 left-0 right-0 px-4 pb-4 flex flex-col gap-2 pointer-events-none">
+            <p className="text-white text-base font-semibold leading-snug drop-shadow-sm">
+              {headline || ad.ad_name || ""}
+            </p>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <Chip
+                className={
+                  ad.status === "ACTIVE"
+                    ? "bg-emerald-500/25 text-emerald-300"
+                    : "bg-white/15 text-white/60"
+                }
+              >
+                {ad.status}
+              </Chip>
+              <Chip className="bg-white/15 text-white/70 capitalize">
+                {info.creative_type}
+              </Chip>
+              {assets.length > 1 && (
+                <Chip className="bg-white/15 text-white/70">
+                  {assets.length} variants
+                </Chip>
+              )}
+              {creative.ad_count > 1 && (
+                <Chip className="bg-white/15 text-white/70">
+                  {creative.ad_count} ads
+                </Chip>
+              )}
+            </div>
+            <p className="text-[10px] text-white/40 font-mono">
+              Creative {info.creative_id}
+            </p>
+          </div>
         </div>
 
         {/* ── Tags ───────────────────────────────────────────────── */}
