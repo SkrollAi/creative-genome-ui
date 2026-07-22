@@ -46,8 +46,8 @@ function defaultDates() {
 export type MetricFilter = { metric: string; operator: string; value: number };
 
 export type AdsFilters = {
-  // Each is a list — multiple values are OR-matched (any one of them can
-  // match), not ANDed together.
+  // Each is a list — multiple values within one field are AND-matched (the
+  // name must contain every value, not just one).
   ad_name: string[];
   adset_name: string[];
   campaign_name: string[];

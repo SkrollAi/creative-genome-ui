@@ -2,7 +2,7 @@ import { AppSidebar } from "@/app/(dashboard)/ui/app-sidebar";
 import { MaintenanceScreen } from "@/app/(dashboard)/ui/maintenance-screen";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
-const MAINTENANCE_MODE = false;
+const MAINTENANCE_MODE = true;
 
 export default function DashboardLayout({
   children,

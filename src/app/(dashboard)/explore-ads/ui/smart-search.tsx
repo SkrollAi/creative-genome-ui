@@ -27,7 +27,7 @@ export function SmartSearch() {
   const fieldLabel = FIELDS.find((f) => f.key === field)?.label ?? "Ad Name";
 
   // One chip per value, not per field — a field can have several active
-  // values, OR-matched on the backend.
+  // values, AND-matched on the backend (the name must contain every value).
   const chips = FIELDS.flatMap((f) =>
     (filters[f.key] as string[]).map((value, i) => ({
       key: f.key,
