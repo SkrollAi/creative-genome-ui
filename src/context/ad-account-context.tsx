@@ -1,12 +1,17 @@
 import { create } from "zustand";
 
+export type AccountStatus = "synced" | "syncing" | "unsynced";
+
 export type AdAccount = {
   ad_account_id: string;
   name: string;
-  is_synced: boolean;
-  is_syncing: boolean;
-  sync_had_errors: boolean;
-  currency: string;
+  status: AccountStatus;
+  synced_account_id?: string;
+  sync_had_errors?: boolean;
+  last_synced_at?: string | null;
+  synced_by?: { name: string };
+  started_by?: { name: string };
+  currency?: string;
 };
 
 type AdAccountStore = {

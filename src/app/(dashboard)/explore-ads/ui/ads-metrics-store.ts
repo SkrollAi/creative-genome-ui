@@ -184,6 +184,7 @@ const DEFAULT_SELECTED: MetricKey[] = [
 type MetricsStore = {
   selected: MetricKey[];
   toggle: (key: MetricKey) => void;
+  reset: () => void;
 };
 
 export const useAdsMetrics = create<MetricsStore>()((set, get) => ({
@@ -195,4 +196,5 @@ export const useAdsMetrics = create<MetricsStore>()((set, get) => ({
       : [...current, key];
     set({ selected: next });
   },
+  reset: () => set({ selected: DEFAULT_SELECTED }),
 }));

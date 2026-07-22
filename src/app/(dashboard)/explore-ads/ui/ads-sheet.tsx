@@ -293,6 +293,7 @@ function AssetSlide({
   asset,
   alt,
   posterUrl,
+  onPlayingChange,
 }: {
   asset: CreativeAsset;
   alt: string;
@@ -300,20 +301,30 @@ function AssetSlide({
   // actual playable video source, not something <Image> can render as a
   // static preview.
   posterUrl?: string;
+  // Lets the parent hide its headline/badge overlay while this slide's
+  // video is playing, so it doesn't sit on top of the video controls.
+  onPlayingChange?: (playing: boolean) => void;
 }) {
   const [playing, setPlaying] = useState(false);
   const isVideo = asset.kind === "video";
   const previewSrc = isVideo ? posterUrl || asset.url : asset.url;
 
+  function updatePlaying(next: boolean) {
+    setPlaying(next);
+    onPlayingChange?.(next);
+  }
+
   if (playing && isVideo && asset.url) {
     return (
-      <video
-        src={asset.url}
-        className="w-full max-h-100 object-contain"
-        autoPlay
-        controls
-        onEnded={() => setPlaying(false)}
-      />
+      <div className="relative w-full aspect-video">
+        <video
+          src={asset.url}
+          className="absolute inset-0 size-full object-contain"
+          autoPlay
+          controls
+          onEnded={() => updatePlaying(false)}
+        />
+      </div>
     );
   }
 
@@ -324,7 +335,7 @@ function AssetSlide({
       )}
       {isVideo && asset.url && (
         <button
-          onClick={() => setPlaying(true)}
+          onClick={() => updatePlaying(true)}
           className="absolute inset-0 flex items-center justify-center group"
         >
           <div className="size-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30 group-hover:bg-white/35 transition-colors">
@@ -338,6 +349,7 @@ function AssetSlide({
 
 export function AdsSheet({ creative, open, onClose }: Props) {
   const [activeTab, setActiveTab] = useState(0);
+  const [mediaPlaying, setMediaPlaying] = useState(false);
   const { selected: account } = useAdAccount();
   const currency = account?.currency ?? "INR";
   const accountId = account?.ad_account_id ?? "";
@@ -379,6 +391,7 @@ export function AdsSheet({ creative, open, onClose }: Props) {
                       asset={asset}
                       alt={headline || ad.ad_name || ""}
                       posterUrl={asset.kind === "video" ? info.thumbnail_url : undefined}
+                      onPlayingChange={setMediaPlaying}
                     />
                   </CarouselItem>
                 ))}
@@ -391,12 +404,17 @@ export function AdsSheet({ creative, open, onClose }: Props) {
               asset={assets[0] ?? { kind: "", url: "" }}
               alt={headline || ad.ad_name || ""}
               posterUrl={assets[0]?.kind === "video" ? info.thumbnail_url : undefined}
+              onPlayingChange={setMediaPlaying}
             />
           )}
           {/* Overlay — gradient + headline + badges, shown once regardless
-              of how many assets there are, on top of whichever is active */}
-          <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/20 to-transparent pointer-events-none" />
-          <div className="absolute bottom-0 left-0 right-0 px-4 pb-4 flex flex-col gap-2 pointer-events-none">
+              of how many assets there are, on top of whichever is active.
+              Hidden while a video is playing so it doesn't sit on top of
+              the video controls. */}
+          {!mediaPlaying && (
+            <>
+              <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/20 to-transparent pointer-events-none" />
+              <div className="absolute bottom-0 left-0 right-0 px-4 pb-4 flex flex-col gap-2 pointer-events-none">
             <p className="text-white text-base font-semibold leading-snug drop-shadow-sm">
               {headline || ad.ad_name || ""}
             </p>
@@ -427,7 +445,9 @@ export function AdsSheet({ creative, open, onClose }: Props) {
             <p className="text-[10px] text-white/40 font-mono">
               Creative {info.creative_id}
             </p>
-          </div>
+              </div>
+            </>
+          )}
         </div>
 
         {/* ── Tags ───────────────────────────────────────────────── */}

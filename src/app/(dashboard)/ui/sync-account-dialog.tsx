@@ -33,7 +33,7 @@ export function SyncAccountDialog({ account, onClose }: Props) {
       setAccounts(
         accounts.map((a) =>
           a.ad_account_id === account.ad_account_id
-            ? { ...a, is_syncing: true }
+            ? { ...a, status: "syncing" as const }
             : a
         )
       );

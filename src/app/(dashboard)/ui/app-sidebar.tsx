@@ -63,16 +63,28 @@ function ReportsSection() {
                     <Link
                       href={`/reports/${report.id}`}
                       className={cn(
-                        "flex items-center gap-2.5 rounded-lg h-8 px-3 text-sm transition-colors",
+                        "flex items-start gap-2.5 rounded-lg py-1.5 px-3 text-sm transition-colors",
                         active
                           ? "bg-primary text-primary-foreground font-semibold"
                           : "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent"
                       )}
                     >
-                      <FileText className="size-3.5 shrink-0" />
-                      <span className="truncate group-data-[collapsible=icon]:hidden">
-                        {report.name}
-                      </span>
+                      <FileText className="size-3.5 shrink-0 mt-0.5" />
+                      <div className="flex flex-col min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
+                        <span className="truncate leading-tight">
+                          {report.name}
+                        </span>
+                        {report.created_by && (
+                          <span
+                            className={cn(
+                              "truncate text-[11px] leading-tight",
+                              active ? "text-primary-foreground/70" : "text-muted-foreground"
+                            )}
+                          >
+                            By {report.created_by.name}
+                          </span>
+                        )}
+                      </div>
                     </Link>
                   </SidebarMenuItem>
                 );

@@ -25,9 +25,9 @@ export type Report = {
     launched_at_to?: string;
     metric_filters?: { metric: string; operator: string; value: number }[];
   };
-  last_rerun_at: string | null;
   created_at: string;
   updated_at: string;
+  created_by?: { name: string };
 };
 
 export function useReports() {

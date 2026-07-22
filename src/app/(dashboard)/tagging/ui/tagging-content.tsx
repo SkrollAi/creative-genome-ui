@@ -297,13 +297,15 @@ export function TaggingContent() {
                 <div className="sticky top-6 flex flex-col gap-4">
                   <div className="relative rounded-xl overflow-hidden bg-muted">
                     {playing && isVideo && selectedAsset?.url ? (
-                      <video
-                        src={selectedAsset.url}
-                        className="w-full max-h-100 object-contain mx-auto"
-                        autoPlay
-                        controls
-                        onEnded={() => setPlaying(false)}
-                      />
+                      <div className="relative w-full aspect-3/4">
+                        <video
+                          src={selectedAsset.url}
+                          className="absolute inset-0 size-full object-contain"
+                          autoPlay
+                          controls
+                          onEnded={() => setPlaying(false)}
+                        />
+                      </div>
                     ) : (
                       <div className="relative w-full aspect-3/4">
                         {previewSrc && (

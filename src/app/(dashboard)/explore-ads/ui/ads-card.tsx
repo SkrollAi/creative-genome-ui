@@ -141,13 +141,15 @@ export function AdsCard({ creative, onSelect }: Props) {
           lets the media size itself instead of forcing a crop). */}
       <div className="relative bg-linear-to-br from-slate-800 to-slate-900 overflow-hidden">
         {playing && hasVideoUrl ? (
-          <video
-            src={primaryAsset?.url}
-            className="w-full max-h-100 object-contain mx-auto"
-            autoPlay
-            controls
-            onEnded={() => setPlaying(false)}
-          />
+          <div className="relative w-full aspect-3/4">
+            <video
+              src={primaryAsset?.url}
+              className="absolute inset-0 size-full object-contain"
+              autoPlay
+              controls
+              onEnded={() => setPlaying(false)}
+            />
+          </div>
         ) : (
           <div className="relative w-full aspect-3/4">
             {previewSrc && (
