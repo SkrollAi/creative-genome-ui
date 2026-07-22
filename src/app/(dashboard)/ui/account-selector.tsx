@@ -55,6 +55,7 @@ export function AccountSelector() {
           synced_account_id: a.synced_account_id,
           sync_had_errors: a.sync_had_errors,
           last_synced_at: a.last_synced_at,
+          currency: a.currency,
           synced_by: a.synced_by,
           started_by: a.started_by,
         }));
