@@ -28,6 +28,7 @@ export type Report = {
   created_at: string;
   updated_at: string;
   created_by?: { name: string };
+  is_owner: boolean;
 };
 
 export function useReports() {

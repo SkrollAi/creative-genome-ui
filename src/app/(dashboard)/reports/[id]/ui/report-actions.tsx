@@ -13,6 +13,7 @@ export function ReportActions({ id }: { id: string }) {
   const [deleteOpen, setDeleteOpen] = useState(false);
 
   if (!report) return null;
+  if (!report.is_owner) return null;
 
   return (
     <>
